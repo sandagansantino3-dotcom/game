@@ -18,7 +18,6 @@ class player(object):
         self.isJump = False
         self.jumpCount = 10
         self.left = False
-        self.left = False
         self.right = False
         self.walkCount = 0
 
@@ -93,7 +92,7 @@ while run:
         if keys[pygame.K_SPACE]:
             self.isJump = True
             self.right = False
-            self.left= False
+            self.left = False
             self.walkCount = 0
 
     else:
