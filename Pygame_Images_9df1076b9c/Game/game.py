@@ -9,6 +9,7 @@ pygame.display.set_caption("BUG GAME")
 
 clock = pygame.time.Clock()
 
+score = 0
 
 class player(object): # This will be our player class
 
@@ -23,7 +24,6 @@ class player(object): # This will be our player class
     self.left = False
     self.right = False
     self.walkCount = 0
-    self.health = 100
 
   def draw(self, win):  
     if self.walkCount + 1 >= 27:
@@ -76,7 +76,6 @@ class enemy(object): # Class for enemy
       self.path = [self.x, self.end]
       self.walkCount = 0
       self.vel = 3
-      self.health
 
   def draw(self, win):
     self.move()
@@ -132,7 +131,7 @@ walkLeft = [
     pygame.image.load('L8.png'),
     pygame.image.load('L9.png'),
 ]
-bg = pygame.image.load('bg.jpg')
+bg = pygame.image.load('bg1.jpg')
 char = pygame.image.load('standing.png')
 
 
@@ -193,5 +192,3 @@ while run:
 pygame.quit()
 
 
-
-# TEST SIX SEVEN
