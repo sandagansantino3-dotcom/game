@@ -108,9 +108,9 @@ while run:
     redrawgamewindow()
 
 
+SIX SEVEN
 
 
-
-   
+ 
 pygame.quit()            
 #___________________________________________________________________
