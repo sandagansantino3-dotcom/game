@@ -21,7 +21,7 @@ class player(object):
         self.right = False
         self.walkCount = 0
 
-    def draw(self.win):
+    def draw(win):
         if  self.walkCount + 1 >=27:
             self.walkCount =0
 
@@ -110,7 +110,7 @@ while run:
     redrawgamewindow()
 
 
-# Test to see if this shit works dasdasd
+# Test to see if this shit works
 
 
  
