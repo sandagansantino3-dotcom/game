@@ -8,7 +8,7 @@ pygame.display.set_caption("BUG GAME")
 clock = pygame.time.Clock()
 
 
-class player(object):
+class player(object): # This will be our player class
 
   def __init__(self, x, y, width, height):
     self.x = x
