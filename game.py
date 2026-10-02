@@ -72,7 +72,7 @@ def redrawgamewindow():
     
 
 #MAIN LOOP________________________
-man = player(300, 410 64, 64)
+man = player(300, 410, 64, 64)
 run = True
 while run:
     clock.tick(27)
