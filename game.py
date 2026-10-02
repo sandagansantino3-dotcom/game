@@ -21,7 +21,7 @@ class player(object):
         self.right = False
         self.walkCount = 0
 
-    def draw(win):
+    def draw(self, win):
         if  self.walkCount + 1 >=27:
             self.walkCount =0
 
