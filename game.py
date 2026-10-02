@@ -22,7 +22,7 @@ class player(object):
         self.right = False
         self.walkCount = 0
 
-    def draw(win):
+    def draw(self.win):
         if  self.walkCount + 1 >=27:
             self.walkCount =0
 
@@ -76,8 +76,8 @@ while run:
 
     if keys[pygame.K_LEFT] and self.x > self.vel:
         self.x -= self.vel
-        man.left = True
-        man.right = False
+        self.left = True
+        self.right = False
 
     elif keys[pygame.K_RIGHT] and self.x < screenwidth - self.width - self.vel:
         self.x += self.vel
