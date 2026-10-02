@@ -40,6 +40,8 @@ class player(object):
  
 screenwidth = 800
 
+
+
 #______________________
 
 #IMGS_______________________________________
@@ -72,39 +74,39 @@ while run:
 
     keys = pygame.key.get_pressed()
 
-    if keys[pygame.K_LEFT] and man.x > man.vel:
-        man.x -= man.vel
+    if keys[pygame.K_LEFT] and self.x > self.vel:
+        self.x -= self.vel
         man.left = True
         man.right = False
 
-    elif keys[pygame.K_RIGHT] and man.x < screenwidth - man.width - man.vel:
-        man.x += man.vel
-        man.right = True
-        man.left = False
+    elif keys[pygame.K_RIGHT] and self.x < screenwidth - self.width - self.vel:
+        self.x += self.vel
+        self.right = True
+        self.left = False
 
     else:
-        man.right = False
-        man.left= False
-        man.walkCount = 0
+        self.right = False
+        self.left= False
+        self.walkCount = 0
 
     if not isJump:
         if keys[pygame.K_SPACE]:
-            man.isJump = True
-            man.right = False
-            man.left= False
-            man.walkCount = 0
+            self.isJump = True
+            self.right = False
+            self.left= False
+            self.walkCount = 0
 
     else:
-        if jumpCount >= -10:
+        if self.jumpCount >= -10:
             neg = 1
-            if man.jumpCount <0:
+            if self.jumpCount <0:
                 neg = -1
-            y -= (man.jumpCount **2)/2 *neg
-            man.jumpCount -=1
+            y -= (self.jumpCount **2)/2 *neg
+            self.jumpCount -=1
             
         else:
-            man.isJump = False
-            man.jumpCount =10
+            self.isJump = False
+            self.jumpCount =10
 
     redrawgamewindow()
 
