@@ -101,6 +101,9 @@ class enemy(object): # Class for enemy
         self.vel = self.vel * -1
         self.walkCount = 0
 
+  def test(self):
+    pass
+
 screenwidth = 800
 
 # IMGS_______________________________________
