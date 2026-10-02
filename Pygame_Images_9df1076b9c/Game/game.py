@@ -1,6 +1,4 @@
 import pygame
-from tkinter import*
-
 
 pygame.init()
 
@@ -24,6 +22,8 @@ class player(object): # This will be our player class
     self.left = False
     self.right = False
     self.walkCount = 0
+    self.health = 10
+    self.max_health = 10
 
   def draw(self, win):  
     if self.walkCount + 1 >= 27:
@@ -39,6 +39,13 @@ class player(object): # This will be our player class
 
     else:
       win.blit(char, (self.x, self.y))
+
+    bar_width = 50
+    bar_height = 10
+    bar_x = self.x + (self.width // 2) - (bar_width // 2)
+    bar_y = self.y - 15
+    pygame.draw.rect(win, (255, 0, 0), (bar_x, bar_y, bar_width, bar_height))
+    pygame.draw.rect(win, (0, 128, 0), (bar_x, bar_y, int(bar_width * (self.health / self.max_health)), bar_height))
 
 class enemy(object): # Class for enemy
   walkRight = [pygame.image.load('R1E.png'), 
@@ -76,6 +83,8 @@ class enemy(object): # Class for enemy
       self.path = [self.x, self.end]
       self.walkCount = 0
       self.vel = 3
+      self.health = 0
+      self.max_health = 10
 
   def draw(self, win):
     self.move()
@@ -89,6 +98,13 @@ class enemy(object): # Class for enemy
     else:
       win.blit(self.walkLeft[self.walkCount // 3], (self.x, self.y))
       self.walkCount += 1
+
+    bar_width = 50
+    bar_height = 10
+    bar_x = self.x + (self.width // 2) - (bar_width // 2)
+    bar_y = self.y - 15
+    pygame.draw.rect(win, (255, 0, 0), (bar_x, bar_y, bar_width, bar_height))
+    pygame.draw.rect(win, (0, 128, 0), (bar_x, bar_y, int(bar_width * (self.health / self.max_health)), bar_height))
 
   def move(self):
     if self.vel > 0:
@@ -131,7 +147,7 @@ walkLeft = [
     pygame.image.load('L8.png'),
     pygame.image.load('L9.png'),
 ]
-bg = pygame.image.load('bg1.jpg')
+bg = pygame.transform.scale(pygame.image.load('bg1.png'), (800, 450))
 char = pygame.image.load('standing.png')
 
 
@@ -143,8 +159,8 @@ def redrawgamewindow():
 
 
 # MAIN LOOP________________________
-man = player(300, 350, 64, 64)
-goblin = enemy(100, 350, 64, 64, 450)
+man = player(300, 215, 64, 64)
+goblin = enemy(100, 220, 64, 64, 450)
 run = True
 
 while run:
@@ -190,5 +206,3 @@ while run:
   redrawgamewindow()
 
 pygame.quit()
-
-
