@@ -1,4 +1,6 @@
 import pygame
+from tkinter import*
+
 
 pygame.init()
 
@@ -21,6 +23,7 @@ class player(object): # This will be our player class
     self.left = False
     self.right = False
     self.walkCount = 0
+    self.health = 100
 
   def draw(self, win):  
     if self.walkCount + 1 >= 27:
@@ -73,6 +76,7 @@ class enemy(object): # Class for enemy
       self.path = [self.x, self.end]
       self.walkCount = 0
       self.vel = 3
+      self.health
 
   def draw(self, win):
     self.move()
@@ -101,8 +105,7 @@ class enemy(object): # Class for enemy
         self.vel = self.vel * -1
         self.walkCount = 0
 
-  def test(self):
-    pass
+  
 
 screenwidth = 800
 
