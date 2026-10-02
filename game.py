@@ -40,16 +40,6 @@ class player(object):
  
 screenwidth = 800
 
-x = 250
-y = 250
-width = 64
-height = 64
-vel = 5
-isJump = False
-jumpCount = 10
-left = False
-right = False
-walkCount = 0
 #______________________
 
 #IMGS_______________________________________
