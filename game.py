@@ -7,8 +7,9 @@ pygame.display.set_caption("BUG GAME")
 
 clock = pygame.time.Clock()
 
+score = 0
 
-class player(object): # This will be our player class
+class player(object): # player class
 
   def __init__(self, x, y, width, height):
     self.x = x
@@ -21,6 +22,8 @@ class player(object): # This will be our player class
     self.left = False
     self.right = False
     self.walkCount = 0
+    self.health = 10
+    self.max_health = 10
 
   def draw(self, win):  
     if self.walkCount + 1 >= 27:
@@ -29,12 +32,95 @@ class player(object): # This will be our player class
     if self.left:
       win.blit(walkLeft[self.walkCount // 3], (self.x, self.y))
       self.walkCount += 1
+
     elif self.right:
       win.blit(walkRight[self.walkCount // 3], (self.x, self.y))
       self.walkCount += 1
+
     else:
       win.blit(char, (self.x, self.y))
 
+    bar_width = 50
+    bar_height = 10
+    bar_x = self.x + (self.width // 2) - (bar_width // 2)
+    bar_y = self.y - 15
+    pygame.draw.rect(win, (255, 0, 0), (bar_x, bar_y, bar_width, bar_height))
+    pygame.draw.rect(win, (0, 128, 0), (bar_x, bar_y, int(bar_width * (self.health / self.max_health)), bar_height))
+
+class enemy(object): # Class enemy
+  walkRight = [pygame.image.load('R1E.png'), 
+               pygame.image.load('R2E.png'), 
+               pygame.image.load('R3E.png'), 
+               pygame.image.load('R4E.png'), 
+               pygame.image.load('R5E.png'), 
+               pygame.image.load('R6E.png'), 
+               pygame.image.load('R7E.png'), 
+               pygame.image.load('R8E.png'), 
+               pygame.image.load('R9E.png'), 
+               pygame.image.load('R10E.png'), 
+               pygame.image.load('R11E.png') 
+               ]
+  
+  walkLeft =  [pygame.image.load('L1E.png'), 
+               pygame.image.load('L2E.png'), 
+               pygame.image.load('L3E.png'), 
+               pygame.image.load('L4E.png'), 
+               pygame.image.load('L5E.png'), 
+               pygame.image.load('L6E.png'), 
+               pygame.image.load('L7E.png'), 
+               pygame.image.load('L8E.png'), 
+               pygame.image.load('L9E.png'), 
+               pygame.image.load('L10E.png'), 
+               pygame.image.load('L11E.png')
+               ]
+
+  def __init__(self, x, y, width, height, end):
+      self.x = x
+      self.y = y
+      self.width = width
+      self.height = height
+      self.end = end
+      self.path = [self.x, self.end]
+      self.walkCount = 0
+      self.vel = 3
+      self.health = 0
+      self.max_health = 10
+
+  def draw(self, win):
+    self.move()
+    if self.walkCount + 1 >= 33:
+      self.walkCount = 0
+
+    if self.vel > 0:
+      win.blit(self.walkRight[self.walkCount // 3], (self.x, self.y))
+      self.walkCount += 1
+      
+    else:
+      win.blit(self.walkLeft[self.walkCount // 3], (self.x, self.y))
+      self.walkCount += 1
+
+    bar_width = 50
+    bar_height = 10
+    bar_x = self.x + (self.width // 2) - (bar_width // 2)
+    bar_y = self.y - 15
+    pygame.draw.rect(win, (255, 0, 0), (bar_x, bar_y, bar_width, bar_height))
+    pygame.draw.rect(win, (0, 128, 0), (bar_x, bar_y, int(bar_width * (self.health / self.max_health)), bar_height))
+
+  def move(self):
+    if self.vel > 0:
+      if self.x + self.vel < self.path[1]:
+        self.x += self.vel
+      else:
+        self.vel = self.vel * -1
+        self.walkCount = 0
+    else:
+      if self.x + self.vel > self.path[0]:
+         self.x += self.vel
+      else:
+        self.vel = self.vel * -1
+        self.walkCount = 0
+
+  
 
 screenwidth = 800
 
@@ -61,22 +147,24 @@ walkLeft = [
     pygame.image.load('L8.png'),
     pygame.image.load('L9.png'),
 ]
-bg = pygame.image.load('bg.jpg')
+bg = pygame.transform.scale(pygame.image.load('bg1.png'), (800, 450))
 char = pygame.image.load('standing.png')
 
 
 def redrawgamewindow():
   win.blit(bg, (0, 0))  
   man.draw(win)  
+  goblin.draw(win)
   pygame.display.update()
 
 
 # MAIN LOOP________________________
-man = player(300, 350, 64, 64)
+man = player(300, 215, 64, 64)
+goblin = enemy(100, 220, 64, 64, 450)
 run = True
 
 while run:
-  clock.tick(27)
+  clock.tick(30)
   for event in pygame.event.get():
     if event.type == pygame.QUIT:
       run = False
