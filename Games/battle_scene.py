@@ -41,9 +41,7 @@ class BattleScene:
         self.feedback_start = 0
         self.feedback_duration = 1200
 
-    # ==================================================
     # EVENT HANDLING
-    # ==================================================
 
     def handle_event(self, event):
         if event.type != pygame.KEYDOWN:
@@ -83,9 +81,7 @@ class BattleScene:
             if event.unicode and len(self.answer) < 300:
                 self.answer += event.unicode
 
-    # ==================================================
     # UPDATE
-    # ==================================================
 
     def update(self):
         if self.state == "answering":
@@ -118,9 +114,7 @@ class BattleScene:
                 else:
                     self.load_next_challenge()
 
-    # ==================================================
     # ANSWER CHECKING
-    # ==================================================
 
     def check_answer(self):
         submitted_answer = self.answer.strip()
@@ -182,9 +176,7 @@ class BattleScene:
         self.state = "answering"
         self.start_time = pygame.time.get_ticks()
 
-    # ==================================================
     # TIMER
-    # ==================================================
 
     def get_time_left(self):
         if self.state != "answering":
@@ -198,9 +190,7 @@ class BattleScene:
 
         return max(0, time_limit - elapsed)
 
-    # ==================================================
     # DRAWING
-    # ==================================================
 
     def draw(self, screen):
         width = screen.get_width()
@@ -235,10 +225,6 @@ class BattleScene:
                 10
             )
         )
-
-        # ----------------------------------------------
-        # Pokémon-style character positions
-        # ----------------------------------------------
 
         # Player is larger and closer to the screen
         player_box = pygame.Rect(
@@ -464,10 +450,6 @@ class BattleScene:
                 )
             )
 
-    # ==================================================
-    # DRAWING HELPERS
-    # ==================================================
-
     def draw_health_bar(
         self,
         screen,
@@ -478,11 +460,7 @@ class BattleScene:
         max_health,
         label
     ):
-        label_surface = self.small_font.render(
-            f"{label} HP: {health}/{max_health}",
-            True,
-            (20, 20, 25)
-        )
+        label_surface = self.small_font.render(f"{label} HP: {health}/{max_health}",True,(20, 20, 25))
 
         screen.blit(label_surface, (x, y))
 
@@ -517,14 +495,7 @@ class BattleScene:
             3
         )
 
-    def draw_multiline_text(
-        self,
-        screen,
-        text,
-        x,
-        y,
-        color
-    ):
+    def draw_multiline_text(self, screen, text, x, y, color):
         for line_number, line in enumerate(text.splitlines()):
             line_surface = self.code_font.render(
                 line,
