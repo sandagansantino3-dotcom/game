@@ -30,9 +30,9 @@ class Player:
         self.left = False
         self.right = False
         self.walkCount = 0
-
-        self.health = 10
-        self.max_health = 10
+        
+        self.max_health = 100
+        self.health = self.max_health
 
     def draw(self, window):
         if self.walkCount + 1 >= 27:
