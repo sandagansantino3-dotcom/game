@@ -1,16 +1,32 @@
 import pygame
 from pathlib import Path
 
-ENEMY_ASSETS = Path(__file__).parent / "assets" / "enemies"
+ENEMY_ASSETS = Path(__file__).parent / "assets" / "enemy"
 
-walkRight = [
-    pygame.image.load(str(ENEMY_ASSETS / f"R{i}E.png"))
-    for i in range(1, 12)
+walkRight = [pygame.image.load('assets/enemy/R1E.png'), 
+               pygame.image.load('assets/enemy/R2E.png'), 
+               pygame.image.load('assets/enemy/R3E.png'), 
+               pygame.image.load('assets/enemy/R4E.png'), 
+               pygame.image.load('assets/enemy/R5E.png'), 
+               pygame.image.load('assets/enemy/R6E.png'), 
+               pygame.image.load('assets/enemy/R7E.png'), 
+               pygame.image.load('assets/enemy/R8E.png'), 
+               pygame.image.load('assets/enemy/R9E.png'), 
+               pygame.image.load('assets/enemy/R10E.png'), 
+               pygame.image.load('assets/enemy/R11E.png') 
 ]
 
-walkLeft = [
-    pygame.image.load(str(ENEMY_ASSETS / f"L{i}E.png"))
-    for i in range(1, 12)
+walkLeft =  [pygame.image.load('assets/enemy/L1E.png'), 
+               pygame.image.load('assets/enemy/L2E.png'), 
+               pygame.image.load('assets/enemy/L3E.png'), 
+               pygame.image.load('assets/enemy/L4E.png'), 
+               pygame.image.load('assets/enemy/L5E.png'), 
+               pygame.image.load('assets/enemy/L6E.png'), 
+               pygame.image.load('assets/enemy/L7E.png'), 
+               pygame.image.load('assets/enemy/L8E.png'), 
+               pygame.image.load('assets/enemy/L9E.png'), 
+               pygame.image.load('assets/enemy/L10E.png'), 
+               pygame.image.load('assets/enemy/L11E.png')
 ]
 
 
