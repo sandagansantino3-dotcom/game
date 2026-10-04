@@ -1,4 +1,8 @@
+# MAIN GAME LOOP
+
 import pygame
+from player import Player
+from enemy import Enemy
 
 pygame.init()
 
@@ -48,30 +52,30 @@ class player(object): # player class
     pygame.draw.rect(win, (0, 128, 0), (bar_x, bar_y, int(bar_width * (self.health / self.max_health)), bar_height))
 
 class enemy(object): # Class enemy
-  walkRight = [pygame.image.load('R1E.png'), 
-               pygame.image.load('R2E.png'), 
-               pygame.image.load('R3E.png'), 
-               pygame.image.load('R4E.png'), 
-               pygame.image.load('R5E.png'), 
-               pygame.image.load('R6E.png'), 
-               pygame.image.load('R7E.png'), 
-               pygame.image.load('R8E.png'), 
-               pygame.image.load('R9E.png'), 
-               pygame.image.load('R10E.png'), 
-               pygame.image.load('R11E.png') 
+  walkRight = [pygame.image.load('assets/enemy/R1E.png'), 
+               pygame.image.load('assets/enemy/R2E.png'), 
+               pygame.image.load('assets/enemy/R3E.png'), 
+               pygame.image.load('assets/enemy/R4E.png'), 
+               pygame.image.load('assets/enemy/R5E.png'), 
+               pygame.image.load('assets/enemy/R6E.png'), 
+               pygame.image.load('assets/enemy/R7E.png'), 
+               pygame.image.load('assets/enemy/R8E.png'), 
+               pygame.image.load('assets/enemy/R9E.png'), 
+               pygame.image.load('assets/enemy/R10E.png'), 
+               pygame.image.load('assets/enemy/R11E.png') 
                ]
   
-  walkLeft =  [pygame.image.load('L1E.png'), 
-               pygame.image.load('L2E.png'), 
-               pygame.image.load('L3E.png'), 
-               pygame.image.load('L4E.png'), 
-               pygame.image.load('L5E.png'), 
-               pygame.image.load('L6E.png'), 
-               pygame.image.load('L7E.png'), 
-               pygame.image.load('L8E.png'), 
-               pygame.image.load('L9E.png'), 
-               pygame.image.load('L10E.png'), 
-               pygame.image.load('L11E.png')
+  walkLeft =  [pygame.image.load('assets/enemy/L1E.png'), 
+               pygame.image.load('assets/enemy/L2E.png'), 
+               pygame.image.load('assets/enemy/L3E.png'), 
+               pygame.image.load('assets/enemy/L4E.png'), 
+               pygame.image.load('assets/enemy/L5E.png'), 
+               pygame.image.load('assets/enemy/L6E.png'), 
+               pygame.image.load('assets/enemy/L7E.png'), 
+               pygame.image.load('assets/enemy/L8E.png'), 
+               pygame.image.load('assets/enemy/L9E.png'), 
+               pygame.image.load('assets/enemy/L10E.png'), 
+               pygame.image.load('assets/enemy/L11E.png')
                ]
 
   def __init__(self, x, y, width, height, end):
@@ -83,7 +87,7 @@ class enemy(object): # Class enemy
       self.path = [self.x, self.end]
       self.walkCount = 0
       self.vel = 3
-      self.health = 0
+      self.health = 10
       self.max_health = 10
 
   def draw(self, win):
@@ -126,26 +130,26 @@ screenwidth = 800
 
 # IMGS_______________________________________
 walkRight = [
-    pygame.image.load('R1.png'),
-    pygame.image.load('R2.png'),
-    pygame.image.load('R3.png'),
-    pygame.image.load('R4.png'),
-    pygame.image.load('R5.png'),
-    pygame.image.load('R6.png'),
-    pygame.image.load('R7.png'),
-    pygame.image.load('R8.png'),
-    pygame.image.load('R9.png'),
+    pygame.image.load('assets/player/R1.png'),
+    pygame.image.load('assets/player/R2.png'),
+    pygame.image.load('assets/player/R3.png'),
+    pygame.image.load('assets/player/R4.png'),
+    pygame.image.load('assets/player/R5.png'),
+    pygame.image.load('assets/player/R6.png'),
+    pygame.image.load('assets/player/R7.png'),
+    pygame.image.load('assets/player/R8.png'),
+    pygame.image.load('assets/player/R9.png'),
 ]
 walkLeft = [
-    pygame.image.load('L1.png'),
-    pygame.image.load('L2.png'),
-    pygame.image.load('L3.png'),
-    pygame.image.load('L4.png'),
-    pygame.image.load('L5.png'),
-    pygame.image.load('L6.png'),
-    pygame.image.load('L7.png'),
-    pygame.image.load('L8.png'),
-    pygame.image.load('L9.png'),
+    pygame.image.load('assets/player/L1.png'),
+    pygame.image.load('assets/player/L2.png'),
+    pygame.image.load('assets/player/L3.png'),
+    pygame.image.load('assets/player/L4.png'),
+    pygame.image.load('assets/player/L5.png'),
+    pygame.image.load('assets/player/L6.png'),
+    pygame.image.load('assets/player/L7.png'),
+    pygame.image.load('assets/player/L8.png'),
+    pygame.image.load('assets/player/L9.png'),
 ]
 bg = pygame.transform.scale(pygame.image.load('bg1.png'), (800, 450))
 char = pygame.image.load('standing.png')
@@ -159,8 +163,8 @@ def redrawgamewindow():
 
 
 # MAIN LOOP________________________
-man = player(300, 215, 64, 64)
-goblin = enemy(100, 220, 64, 64, 450)
+man = Player(300, 215, 64, 64)
+goblin = Enemy(100, 220, 64, 64, 450)
 run = True
 
 while run:
