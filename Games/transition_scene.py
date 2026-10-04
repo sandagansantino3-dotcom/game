@@ -19,11 +19,6 @@ class BattleTransition:
         self.phase_start = pygame.time.get_ticks()
 
     def update(self):
-        """
-        Returns True exactly when the screen becomes fully black.
-        game.py uses this moment to change to the battle scene.
-        """
-
         if not self.active:
             return False
 
