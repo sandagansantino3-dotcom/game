@@ -4,13 +4,11 @@ from pathlib import Path
 PLAYER_ASSETS = Path(__file__).parent / "assets" / "player"
 
 walkRight = [
-    pygame.image.load(str(PLAYER_ASSETS / f"R{i}.png"))
-    for i in range(1, 10)
+    pygame.image.load(str(PLAYER_ASSETS / f"R{i}.png")) for i in range(1, 10)
 ]
 
 walkLeft = [
-    pygame.image.load(str(PLAYER_ASSETS / f"L{i}.png"))
-    for i in range(1, 10)
+    pygame.image.load(str(PLAYER_ASSETS / f"L{i}.png")) for i in range(1, 10)
 ]
 
 standing = pygame.image.load(

@@ -4,13 +4,11 @@ from pathlib import Path
 ENEMY_ASSETS = Path(__file__).parent / "assets" / "enemy"
 
 walkRight = [
-    pygame.image.load(str(ENEMY_ASSETS / f"R{i}E.png"))
-    for i in range(1, 12)
+    pygame.image.load(str(ENEMY_ASSETS / f"R{i}E.png")) for i in range(1, 12)
 ]
 
 walkLeft = [
-    pygame.image.load(str(ENEMY_ASSETS / f"L{i}E.png"))
-    for i in range(1, 12)
+    pygame.image.load(str(ENEMY_ASSETS / f"L{i}E.png")) for i in range(1, 12)
 ]
 
 class Enemy:
