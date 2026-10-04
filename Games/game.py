@@ -81,3 +81,6 @@ while run:
 pygame.quit()
 
 # SIX SEVEN
+
+def tite(self):
+  pass
