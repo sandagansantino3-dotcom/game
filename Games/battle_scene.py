@@ -29,8 +29,7 @@ class BattleScene:
         # Player's typed answer
         self.answer = ""
 
-        # Battle states:
-        # answering, feedback, victory, defeat
+        # Battle states: answering, feedback, victory, defeat
         self.state = "answering"
 
         self.message = ""
