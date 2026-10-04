@@ -304,10 +304,7 @@ class BattleScene:
                 - boss_label.get_height() // 2
             )
         )
-
-        # ----------------------------------------------
         # Health bars
-        # ----------------------------------------------
 
         self.draw_health_bar(
             screen,
