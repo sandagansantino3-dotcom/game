@@ -3,8 +3,10 @@
 import pygame
 from player import Player
 from enemy import Enemy
+from pathlib import Path
 
 pygame.init()
+GAME_FOLDER = Path(__file__).parent
 
 win = pygame.display.set_mode((800, 450))
 pygame.display.set_caption("BUG GAME")
@@ -13,7 +15,14 @@ score = 0
 
 screenwidth = 800
 
-bg = pygame.transform.scale(pygame.image.load('assets/backgrounds/bg1.png'), (800, 450))
+background_path = (
+    GAME_FOLDER / "assets" / "backgrounds" / "bg1.png"
+)
+
+bg = pygame.transform.scale(
+    pygame.image.load(str(background_path)),
+    (800, 450)
+)
 
 def redrawgamewindow():
   win.blit(bg, (0, 0))  
