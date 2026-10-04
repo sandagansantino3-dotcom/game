@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
-from transition_scene import BattleTransition
 import pygame
+from transition_scene import BattleTransition
 
 from player import Player
 from enemy import Enemy
@@ -42,6 +42,7 @@ goblin = Enemy(100, 220, 64, 64, 450)
 # Scenes
 battle = BattleScene(man, goblin)
 current_scene = "map"
+transition = BattleTransition()
 
 run = True
 
@@ -70,8 +71,6 @@ while run:
             if event.key == pygame.K_ESCAPE:
                 run = False
 
-            # F only changes fullscreen while on the map.
-            # This allows the player to type F during battle.
             elif (
                 event.key == pygame.K_f
                 and current_scene == "map"
@@ -91,15 +90,9 @@ while run:
                     )
 
             # battle button (temporary)
-            elif (
-                event.key == pygame.K_b
-                and current_scene == "map"
-            ):
-                current_scene = "battle"
-
-                # Prevents B from being typed
-                # inside the battle answer.
-                continue
+            elif (event.key == pygame.K_b and current_scene == "map" and not transition.active):
+              transition.start()
+              continue
 
         # Send keyboard events to the battle.
         if current_scene == "battle":
@@ -107,56 +100,57 @@ while run:
 
     # MAP SCENE
 
-    if current_scene == "map":
-        keys = pygame.key.get_pressed()
+    if current_scene == "map": 
+        if not transition.active:
+          keys = pygame.key.get_pressed()
 
-        # Horizontal movement
-        if (
-            keys[pygame.K_LEFT]
-            and man.x > man.vel
-        ):
-            man.x -= man.vel
-            man.left = True
-            man.right = False
+          # Horizontal movement
+          if (
+              keys[pygame.K_LEFT]
+              and man.x > man.vel
+          ):
+              man.x -= man.vel
+              man.left = True
+              man.right = False
 
-        elif (
-            keys[pygame.K_RIGHT]
-            and man.x
-            < screen.get_width() - man.width - man.vel
-        ):
-            man.x += man.vel
-            man.right = True
-            man.left = False
+          elif (
+              keys[pygame.K_RIGHT]
+              and man.x
+              < screen.get_width() - man.width - man.vel
+          ):
+              man.x += man.vel
+              man.right = True
+              man.left = False
 
-        else:
-            man.right = False
-            man.left = False
-            man.walkCount = 0
+          else:
+              man.right = False
+              man.left = False
+              man.walkCount = 0
 
-        # Jumping
-        if not man.isJump:
-            if keys[pygame.K_SPACE]:
-                man.isJump = True
-                man.right = False
-                man.left = False
-                man.walkCount = 0
+          # Jumping
+          if not man.isJump:
+              if keys[pygame.K_SPACE]:
+                  man.isJump = True
+                  man.right = False
+                  man.left = False
+                  man.walkCount = 0
 
-        else:
-            if man.jumpCount >= -10:
-                neg = 1
+          else:
+              if man.jumpCount >= -10:
+                  neg = 1
 
-                if man.jumpCount < 0:
-                    neg = -1
+                  if man.jumpCount < 0:
+                      neg = -1
 
-                man.y -= (
-                    man.jumpCount ** 2
-                ) * 0.5 * neg
+                  man.y -= (
+                      man.jumpCount ** 2
+                  ) * 0.5 * neg
 
-                man.jumpCount -= 1
+                  man.jumpCount -= 1
 
-            else:
-                man.isJump = False
-                man.jumpCount = 10
+              else:
+                  man.isJump = False
+                  man.jumpCount = 10
 
         # Resize and draw the map background
         bg = pygame.transform.scale(
@@ -176,9 +170,15 @@ while run:
         battle.update()
         battle.draw(screen)
 
-    # Show the completed frame
-    pygame.display.update()
+    if transition.active:
+      switch_to_battle = transition.update()
 
+      if switch_to_battle:
+          current_scene = "battle"
+
+      transition.draw(screen)
+
+    pygame.display.update()
 
 pygame.quit()
 sys.exit()
