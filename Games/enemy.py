@@ -2,22 +2,29 @@ from pathlib import Path
 import pygame
 
 
-ENEMY_ASSETS = Path(__file__).parent / "assets" / "enemy"
+ASSETS = Path(__file__).parent / "assets"
 
-walk_right_images = [
-    pygame.image.load(
-        str(ENEMY_ASSETS / f"R{i}E.png")
-    )
-    for i in range(1, 12)
-]
+# One entry per enemy type: its image folder, the letter at the end of
+# its file names, and how many animation frames it has.
+SPRITE_SETS = {
+    "goblin": {"folder": "enemy", "suffix": "E", "count": 11},
+}
 
-walk_left_images = [
-    pygame.image.load(
-        str(ENEMY_ASSETS / f"L{i}E.png")
-    )
-    for i in range(1, 12)
-]
 
+def load_frames(sprite_set, side, size):
+    """Load and resize the walking frames for one direction.
+
+    side is "R" or "L", matching file names like R1E.png / L1E.png.
+    """
+    info = SPRITE_SETS[sprite_set]
+    frames = []
+
+    for i in range(1, info["count"] + 1):
+        path = ASSETS / info["folder"] / f"{side}{i}{info['suffix']}.png"
+        image = pygame.image.load(str(path))
+        frames.append(pygame.transform.scale(image, size))
+
+    return frames
 
 class Enemy:
     def __init__(
@@ -26,7 +33,8 @@ class Enemy:
         y,
         width,
         height,
-        end
+        end,
+        sprite_set="goblin"
     ):
         self.x = float(x)
         self.y = float(y)
@@ -46,22 +54,9 @@ class Enemy:
         self.health = self.max_health
         self.attack_damage = 20
 
-        self.walk_right = [
-            pygame.transform.scale(
-                image,
-                (width, height)
-            )
-            for image in walk_right_images
-        ]
-
-        self.walk_left = [
-            pygame.transform.scale(
-                image,
-                (width, height)
-            )
-            for image in walk_left_images
-        ]
-
+        self.walk_right = load_frames(sprite_set, "R", (width, height))
+        self.walk_left = load_frames(sprite_set, "L", (width, height))
+        
     @property
     def rect(self):
         hitbox_width = int(

@@ -24,7 +24,7 @@ LEVEL = [
 
 
 class TileMap:
-    def __init__(self):
+    def __init__(self, level=LEVEL):
         self.images = {
             "<": pygame.image.load(
                 str(TILE_FOLDER / "tile032.png")
@@ -41,7 +41,7 @@ class TileMap:
 
         self.tiles = []
 
-        for row_number, row in enumerate(LEVEL):
+        for row_number, row in enumerate(level):
             for column_number, symbol in enumerate(row):
                 if symbol != ".":
                     rect = pygame.Rect(
@@ -59,8 +59,8 @@ class TileMap:
             rect for _, rect in self.tiles
         ]
 
-        self.width = len(LEVEL[0]) * TILE_SIZE
-        self.height = len(LEVEL) * TILE_SIZE
+        self.width = len(level[0]) * TILE_SIZE
+        self.height = len(level) * TILE_SIZE
 
     def draw(self, screen):
         for image, rect in self.tiles:

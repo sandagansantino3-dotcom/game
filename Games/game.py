@@ -7,6 +7,7 @@ from enemy import Enemy
 from player import Player
 from tilemap import TileMap
 from transition_scene import BattleTransition
+from map_scene import MapScene
 
 
 pygame.init()
@@ -55,10 +56,13 @@ goblin = Enemy(
     720
 )
 
+
 battle = BattleScene(
     man,
     goblin
 )
+
+map_scene = MapScene(man, goblin, tile_map, background)
 
 transition = BattleTransition()
 
@@ -108,31 +112,13 @@ while running:
 
     if current_scene == "map":
         if not transition.active:
-            keys = pygame.key.get_pressed()
+            touched_enemy = map_scene.update(pygame.key.get_pressed())
 
-            man.update(
-                keys,
-                tile_map.solid_rects,
-                tile_map.width
-            )
-
-            goblin.update(
-                tile_map.solid_rects
-            )
-
-            if man.rect.colliderect(
-                goblin.rect
-            ):
+            if touched_enemy:
                 transition.start()
+                
 
-        screen.blit(
-            background,
-            (0, 0)
-        )
-
-        tile_map.draw(screen)
-        man.draw(screen)
-        goblin.draw(screen)
+        map_scene.draw(screen)
 
     elif current_scene == "battle":
         battle.update()
