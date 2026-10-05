@@ -1,18 +1,17 @@
-import pygame
 from pathlib import Path
+import pygame
+
 
 PLAYER_ASSETS = Path(__file__).parent / "assets" / "player"
 
-# Right-facing sprites are named R0.png to R7.png
-walkRight = [
+walk_right_images = [
     pygame.image.load(
         str(PLAYER_ASSETS / f"R{i}.png")
     )
-    for i in range(0, 8)
+    for i in range(8)
 ]
 
-# Left-facing sprites are named L1.png to L8.png
-walkLeft = [
+walk_left_images = [
     pygame.image.load(
         str(PLAYER_ASSETS / f"L{i}.png")
     )
@@ -26,31 +25,39 @@ standing_image = pygame.image.load(
 
 class Player:
     def __init__(self, x, y, width, height):
-        self.x = x
-        self.y = y
+        self.x = float(x)
+        self.y = float(y)
+
         self.width = width
         self.height = height
 
-        self.vel = 5
-        self.isJump = False
-        self.jumpCount = 10
+        self.speed = 5
+        self.velocity_y = 0
+        self.gravity = 0.8
+        self.jump_speed = 14
+        self.on_ground = False
 
         self.left = False
         self.right = False
-        self.walkCount = 0
+        self.walk_count = 0
 
         self.max_health = 100
         self.health = self.max_health
 
-        # Resize all sprites to the player's chosen size
         self.walk_right = [
-            pygame.transform.scale(image, (width, height))
-            for image in walkRight
+            pygame.transform.scale(
+                image,
+                (width, height)
+            )
+            for image in walk_right_images
         ]
 
         self.walk_left = [
-            pygame.transform.scale(image, (width, height))
-            for image in walkLeft
+            pygame.transform.scale(
+                image,
+                (width, height)
+            )
+            for image in walk_left_images
         ]
 
         self.standing = pygame.transform.scale(
@@ -58,62 +65,152 @@ class Player:
             (width, height)
         )
 
-    def draw(self, window):
-        frames_per_sprite = 3
-        animation_length = (
-            len(self.walk_right) * frames_per_sprite
+    @property
+    def rect(self):
+        hitbox_width = int(self.width * 0.5)
+        hitbox_height = int(self.height * 0.8)
+
+        return pygame.Rect(
+            round(
+                self.x
+                + (self.width - hitbox_width) / 2
+            ),
+            round(
+                self.y
+                + self.height
+                - hitbox_height
+            ),
+            hitbox_width,
+            hitbox_height
         )
 
-        # Prevent animation index errors
-        if self.walkCount >= animation_length:
-            self.walkCount = 0
+    def jump(self):
+        if self.on_ground:
+            self.velocity_y = -self.jump_speed
+            self.on_ground = False
 
-        if self.left:
-            frame = self.walkCount // frames_per_sprite
+    def update(
+        self,
+        keys,
+        solid_rects,
+        level_width
+    ):
+        dx = 0
 
-            window.blit(
-                self.walk_left[frame],
-                (self.x, self.y)
-            )
+        if keys[pygame.K_LEFT]:
+            dx = -self.speed
+            self.left = True
+            self.right = False
 
-            self.walkCount += 1
-
-        elif self.right:
-            frame = self.walkCount // frames_per_sprite
-
-            window.blit(
-                self.walk_right[frame],
-                (self.x, self.y)
-            )
-
-            self.walkCount += 1
+        elif keys[pygame.K_RIGHT]:
+            dx = self.speed
+            self.right = True
+            self.left = False
 
         else:
-            window.blit(
-                self.standing,
-                (self.x, self.y)
+            self.left = False
+            self.right = False
+            self.walk_count = 0
+
+        rect = self.rect
+        rect.x += dx
+
+        for tile in solid_rects:
+            if rect.colliderect(tile):
+                if dx > 0:
+                    rect.right = tile.left
+
+                elif dx < 0:
+                    rect.left = tile.right
+
+        if rect.left < 0:
+            rect.left = 0
+
+        if rect.right > level_width:
+            rect.right = level_width
+
+        self.x = (
+            rect.centerx - self.width / 2
+        )
+
+        self.velocity_y = min(
+            self.velocity_y + self.gravity,
+            16
+        )
+
+        rect = self.rect
+        rect.y += round(self.velocity_y)
+        self.on_ground = False
+
+        for tile in solid_rects:
+            if rect.colliderect(tile):
+                if self.velocity_y > 0:
+                    rect.bottom = tile.top
+                    self.velocity_y = 0
+                    self.on_ground = True
+
+                elif self.velocity_y < 0:
+                    rect.top = tile.bottom
+                    self.velocity_y = 0
+
+        self.y = rect.bottom - self.height
+
+    def draw(self, window):
+        frames_per_image = 3
+
+        if self.left or self.right:
+            if self.left:
+                frames = self.walk_left
+            else:
+                frames = self.walk_right
+
+            animation_length = (
+                len(frames) * frames_per_image
             )
 
-        # Health bar matches the player's new width
+            self.walk_count %= animation_length
+
+            frame = (
+                self.walk_count
+                // frames_per_image
+            )
+
+            image = frames[frame]
+            self.walk_count += 1
+
+        else:
+            image = self.standing
+
+        window.blit(
+            image,
+            (round(self.x), round(self.y))
+        )
+
         bar_width = self.width
-        bar_height = 10
 
         bar_x = (
             self.x
-            + self.width // 2
-            - bar_width // 2
+            + self.width / 2
+            - bar_width / 2
         )
 
         bar_y = self.y - 15
 
+        health_width = int(
+            bar_width
+            * self.health
+            / self.max_health
+        )
+
         pygame.draw.rect(
             window,
             (255, 0, 0),
-            (bar_x, bar_y, bar_width, bar_height)
-        )
-
-        health_percent = (
-            self.health / self.max_health
+            (
+                bar_x,
+                bar_y,
+                bar_width,
+                10
+            )
         )
 
         pygame.draw.rect(
@@ -122,7 +219,7 @@ class Player:
             (
                 bar_x,
                 bar_y,
-                int(bar_width * health_percent),
-                bar_height
+                health_width,
+                10
             )
         )

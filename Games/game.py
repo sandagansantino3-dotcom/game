@@ -1,75 +1,81 @@
 import sys
 from pathlib import Path
 import pygame
-from transition_scene import BattleTransition
 
-from player import Player
-from enemy import Enemy
 from battle_scene import BattleScene
+from enemy import Enemy
+from player import Player
+from tilemap import TileMap
+from transition_scene import BattleTransition
 
 
 pygame.init()
 
 GAME_FOLDER = Path(__file__).parent
+SCREEN_SIZE = (800, 448)
+
 clock = pygame.time.Clock()
 
 screen = pygame.display.set_mode(
-    (800, 450),
-    pygame.RESIZABLE
+    SCREEN_SIZE
 )
 
 pygame.display.set_caption("MIGUEL")
 
-fullscreen = False
-window_size = (800, 450)
-
-monitor_size = (
-    pygame.display.Info().current_w,
-    pygame.display.Info().current_h
+background_path = (
+    GAME_FOLDER
+    / "assets"
+    / "backgrounds"
+    / "bg1.png"
 )
 
-background_path = (
-    GAME_FOLDER/ "assets"/ "backgrounds"/ "bg1.png")
-
-original_bg = pygame.image.load(
+background = pygame.image.load(
     str(background_path)
 ).convert()
 
-# Characters
-man = Player(300, 199, 80, 80)
-goblin = Enemy(100, 220, 64, 64, 450)
+background = pygame.transform.scale(
+    background,
+    SCREEN_SIZE
+)
 
-# Scenes
-battle = BattleScene(man, goblin)
-current_scene = "map"
+tile_map = TileMap()
+
+man = Player(
+    80,
+    200,
+    80,
+    80
+)
+
+goblin = Enemy(
+    560,
+    250,
+    64,
+    64,
+    720
+)
+
+battle = BattleScene(
+    man,
+    goblin
+)
+
 transition = BattleTransition()
 
-run = True
+current_scene = "map"
+fullscreen = False
+running = True
 
-
-while run:
-    clock.tick(30)
+while running:
+    clock.tick(60)
 
     for event in pygame.event.get():
-
         if event.type == pygame.QUIT:
-            run = False
-
-        elif (
-            event.type == pygame.VIDEORESIZE
-            and not fullscreen
-        ):
-            window_size = event.size
-
-            screen = pygame.display.set_mode(
-                window_size,
-                pygame.RESIZABLE
-            )
+            running = False
 
         elif event.type == pygame.KEYDOWN:
-
             if event.key == pygame.K_ESCAPE:
-                run = False
+                running = False
 
             elif (
                 event.key == pygame.K_f
@@ -78,107 +84,67 @@ while run:
                 fullscreen = not fullscreen
 
                 if fullscreen:
-                    screen = pygame.display.set_mode(
-                        monitor_size,
+                    flags = (
                         pygame.FULLSCREEN
+                        | pygame.SCALED
                     )
-
                 else:
-                    screen = pygame.display.set_mode(
-                        window_size,
-                        pygame.RESIZABLE
-                    )
+                    flags = 0
 
-            # battle button (temporary)
-            elif (event.key == pygame.K_b and current_scene == "map" and not transition.active):
-              transition.start()
-              continue
+                screen = pygame.display.set_mode(
+                    SCREEN_SIZE,
+                    flags
+                )
 
-        # Send keyboard events to the battle.
+            elif (
+                event.key == pygame.K_SPACE
+                and current_scene == "map"
+                and not transition.active
+            ):
+                man.jump()
+
         if current_scene == "battle":
             battle.handle_event(event)
 
-    # MAP SCENE
-
-    if current_scene == "map": 
+    if current_scene == "map":
         if not transition.active:
-          keys = pygame.key.get_pressed()
+            keys = pygame.key.get_pressed()
 
-          # Horizontal movement
-          if (
-              keys[pygame.K_LEFT]
-              and man.x > man.vel
-          ):
-              man.x -= man.vel
-              man.left = True
-              man.right = False
+            man.update(
+                keys,
+                tile_map.solid_rects,
+                tile_map.width
+            )
 
-          elif (
-              keys[pygame.K_RIGHT]
-              and man.x
-              < screen.get_width() - man.width - man.vel
-          ):
-              man.x += man.vel
-              man.right = True
-              man.left = False
+            goblin.update(
+                tile_map.solid_rects
+            )
 
-          else:
-              man.right = False
-              man.left = False
-              man.walkCount = 0
+            if man.rect.colliderect(
+                goblin.rect
+            ):
+                transition.start()
 
-          # Jumping
-          if not man.isJump:
-              if keys[pygame.K_SPACE]:
-                  man.isJump = True
-                  man.right = False
-                  man.left = False
-                  man.walkCount = 0
-
-          else:
-              if man.jumpCount >= -10:
-                  neg = 1
-
-                  if man.jumpCount < 0:
-                      neg = -1
-
-                  man.y -= (
-                      man.jumpCount ** 2
-                  ) * 0.5 * neg
-
-                  man.jumpCount -= 1
-
-              else:
-                  man.isJump = False
-                  man.jumpCount = 10
-
-        # Resize and draw the map background
-        bg = pygame.transform.scale(
-            original_bg,
-            screen.get_size()
+        screen.blit(
+            background,
+            (0, 0)
         )
 
-        screen.blit(bg, (0, 0))
-
-        # Draw map characters
+        tile_map.draw(screen)
         man.draw(screen)
         goblin.draw(screen)
-
-    # BATTLE SCENE
 
     elif current_scene == "battle":
         battle.update()
         battle.draw(screen)
 
     if transition.active:
-      switch_to_battle = transition.update()
+        if transition.update():
+            current_scene = "battle"
 
-      if switch_to_battle:
-          current_scene = "battle"
+        transition.draw(screen)
 
-      transition.draw(screen)
-
-    pygame.display.update()
+    pygame.display.flip()
 
 pygame.quit()
 sys.exit()
