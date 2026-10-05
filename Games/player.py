@@ -8,7 +8,7 @@ walkRight = [
 ]
 
 walkLeft = [
-    pygame.image.load(str(PLAYER_ASSETS / f"L{i}.png")) for i in range(1, 10)
+    pygame.image.load(str(PLAYER_ASSETS / f"L{i}.png")) for i in range(1, 8)
 ]
 
 standing = pygame.image.load(
