@@ -26,7 +26,7 @@ class Enemy:
 
         self.max_health = 100
         self.health = self.max_health
-        attack_damage = 20
+        self.attack_damage = 20
 
     def draw(self, window):
         self.move()

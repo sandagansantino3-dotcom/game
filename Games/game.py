@@ -36,7 +36,7 @@ original_bg = pygame.image.load(
 ).convert()
 
 # Characters
-man = Player(300, 215, 64, 64)
+man = Player(300, 199, 80, 80)
 goblin = Enemy(100, 220, 64, 64, 450)
 
 # Scenes
