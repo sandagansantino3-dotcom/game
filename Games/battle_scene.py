@@ -38,10 +38,32 @@ class BattleScene:
         )
 
         # Fonts
-        self.title_font = pygame.font.Font(None, 36)
-        self.normal_font = pygame.font.Font(None, 28)
-        self.code_font = pygame.font.Font(None, 26)
-        self.small_font = pygame.font.Font(None, 22)
+        font_path = (
+    Path(__file__).parent
+    / "assets"
+    / "fonts"
+    / "Silkscreen-Regular.ttf"
+)
+
+        self.title_font = pygame.font.Font(
+            str(font_path),
+            28
+        )
+
+        self.normal_font = pygame.font.Font(
+            str(font_path),
+            18
+        )
+
+        self.code_font = pygame.font.Font(
+            str(font_path),
+            17
+        )
+
+        self.small_font = pygame.font.Font(
+            str(font_path),
+            14
+        )
 
         # Challenge information
         self.challenge_index = 0
@@ -270,27 +292,6 @@ class BattleScene:
             (boss_x, boss_y)
         )
 
-        screen.blit(
-            player_label,
-            (
-                player_box.centerx
-                - player_label.get_width() // 2,
-
-                player_box.centery
-                - player_label.get_height() // 2
-            )
-        )
-
-        screen.blit(
-            boss_label,
-            (
-                boss_box.centerx
-                - boss_label.get_width() // 2,
-
-                boss_box.centery
-                - boss_label.get_height() // 2
-            )
-        )
         # Health bars
 
         self.draw_health_bar(
