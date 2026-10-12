@@ -9,23 +9,27 @@ class BattleScene:
         self.player = player
         self.boss = boss
 
+        assets = Path(__file__).parent / "assets"
+
         self.background = pygame.image.load(
             str(
-                    assets
+                assets
                 / "backgrounds"
                 / "MiguelBattleBG.png"
-                )
+            )
         ).convert()
 
-        # Temporary battle stats
+        self.background = pygame.transform.scale(
+            self.background,
+            (800, 448)
+        )
+
         self.player.max_health = 100
         self.player.health = 100
 
         self.boss.max_health = 100
         self.boss.health = 100
         self.boss.attack_damage = 20
-
-        assets = Path(__file__).parent / "assets"
 
         self.player_image = pygame.image.load(
             str(assets / "player" / "PlayerBS.png")
@@ -47,11 +51,10 @@ class BattleScene:
 
         # Fonts
         font_path = (
-    Path(__file__).parent
-    / "assets"
-    / "fonts"
-    / "Silkscreen-Regular.ttf"
-)
+            assets
+            / "fonts"
+            / "Silkscreen-Regular.ttf"
+        )
 
         self.title_font = pygame.font.Font(
             str(font_path),
@@ -246,23 +249,17 @@ class BattleScene:
         width = screen.get_width()
         height = screen.get_height()
 
-        # Ground
-        pygame.draw.rect(
-            screen,
-            (95, 150, 90),
-            (
-                0,
-                int(height * 0.48),
-                width,
-                int(height * 0.20)
-            )
+        screen.blit(
+            self.background,
+            (0, 0)
         )
 
         # Battle title
+        
         title = self.title_font.render(
             "CODE BATTLE",
             True,
-            (20, 20, 30)
+            (255, 245, 255)
         )
 
         screen.blit(
@@ -283,7 +280,7 @@ class BattleScene:
         boss_x = int(width * 0.62)
 
         boss_y = (
-            int(height * 0.48)
+            int(height * 0.60)
             - self.boss_image.get_height()
         )
 
@@ -450,7 +447,11 @@ class BattleScene:
         max_health,
         label
     ):
-        label_surface = self.small_font.render(f"{label} HP: {health}/{max_health}",True,(20, 20, 25))
+        label_surface = self.small_font.render(
+            f"{label} HP: {health}/{max_health}",
+            True,
+            (225, 245, 255)
+)
 
         screen.blit(label_surface, (x, y))
 
