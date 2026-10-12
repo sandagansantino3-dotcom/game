@@ -1,3 +1,4 @@
+from pathlib import Path
 import pygame
 
 from challenges import CHALLENGES
@@ -15,6 +16,26 @@ class BattleScene:
         self.boss.max_health = 100
         self.boss.health = 100
         self.boss.attack_damage = 20
+
+        assets = Path(__file__).parent / "assets"
+
+        self.player_image = pygame.image.load(
+            str(assets / "player" / "PlayerBS.png")
+        ).convert_alpha()
+
+        self.boss_image = pygame.image.load(
+            str(assets / "boss" / "MiguelBS.png")
+        ).convert_alpha()
+
+        self.player_image = pygame.transform.scale(
+            self.player_image,
+            (190, 190)
+        )
+
+        self.boss_image = pygame.transform.scale(
+            self.boss_image,
+            (140, 210)
+        )
 
         # Fonts
         self.title_font = pygame.font.Font(None, 36)
@@ -225,61 +246,28 @@ class BattleScene:
             )
         )
 
-        # Player is larger and closer to the screen
-        player_box = pygame.Rect(
-            int(width * 0.10),
-            int(height * 0.34),
-            int(width * 0.18),
-            int(height * 0.28)
+        player_x = int(width * 0.08)
+
+        player_y = (
+            int(height * 0.68)
+            - self.player_image.get_height()
         )
 
-        # Boss is smaller and farther from the screen
-        boss_box = pygame.Rect(
-            int(width * 0.72),
-            int(height * 0.15),
-            int(width * 0.12),
-            int(height * 0.20)
+        boss_x = int(width * 0.73)
+
+        boss_y = (
+            int(height * 0.48)
+            - self.boss_image.get_height()
         )
 
-        # Player box
-        pygame.draw.rect(
-            screen,
-            (50, 120, 255),
-            player_box
+        screen.blit(
+            self.player_image,
+            (player_x, player_y)
         )
 
-        pygame.draw.rect(
-            screen,
-            (20, 20, 30),
-            player_box,
-            4
-        )
-
-        # Boss box
-        pygame.draw.rect(
-            screen,
-            (220, 60, 60),
-            boss_box
-        )
-
-        pygame.draw.rect(
-            screen,
-            (20, 20, 30),
-            boss_box,
-            4
-        )
-
-        # Character labels
-        player_label = self.normal_font.render(
-            "PLAYER",
-            True,
-            (255, 255, 255)
-        )
-
-        boss_label = self.small_font.render(
-            "BOSS",
-            True,
-            (255, 255, 255)
+        screen.blit(
+            self.boss_image,
+            (boss_x, boss_y)
         )
 
         screen.blit(
@@ -312,7 +300,7 @@ class BattleScene:
             bar_width=int(width * 0.30),
             health=self.boss.health,
             max_health=self.boss.max_health,
-            label="BOSS"
+            label="MIGUEL"
         )
 
         self.draw_health_bar(
