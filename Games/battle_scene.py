@@ -21,7 +21,7 @@ class BattleScene:
 
         self.background = pygame.transform.scale(
             self.background,
-            (800, 448)
+            (800, 450)
         )
 
         self.player.max_health = 100
