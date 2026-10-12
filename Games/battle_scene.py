@@ -9,6 +9,14 @@ class BattleScene:
         self.player = player
         self.boss = boss
 
+        self.background = pygame.image.load(
+            str(
+                    assets
+                / "backgrounds"
+                / "MiguelBattleBG.png"
+                )
+        ).convert()
+
         # Temporary battle stats
         self.player.max_health = 100
         self.player.health = 100
@@ -238,9 +246,6 @@ class BattleScene:
         width = screen.get_width()
         height = screen.get_height()
 
-        # Battle background
-        screen.fill((135, 190, 220))
-
         # Ground
         pygame.draw.rect(
             screen,
@@ -268,14 +273,14 @@ class BattleScene:
             )
         )
 
-        player_x = int(width * 0.08)
+        player_x = int(width * 0.20)
 
         player_y = (
             int(height * 0.68)
             - self.player_image.get_height()
         )
 
-        boss_x = int(width * 0.73)
+        boss_x = int(width * 0.62)
 
         boss_y = (
             int(height * 0.48)
