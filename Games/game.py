@@ -11,7 +11,6 @@ from transition_scene import BattleTransition
 from map_scene import MapScene
 from parallax import ParallaxBackground
 
-
 pygame.init()
 
 GAME_FOLDER = Path(__file__).parent
@@ -134,12 +133,6 @@ while running:
                     SCREEN_SIZE,
                     flags
                 )
-
-            elif (
-                event.key == pygame.K_m
-                and not fullscreen
-            ):
-                pygame.display.iconify()
 
             elif (
                 event.key == pygame.K_SPACE
