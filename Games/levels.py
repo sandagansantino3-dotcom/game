@@ -49,9 +49,8 @@ LEVELS = [
     },
     {
         "layout": LEVEL_2,
-        # These are the same files as level 1 so the game runs.
-        # Change them to your own level 2 files in assets/backgrounds
-        # and assets/tiles when you have them.
+        # Same files as level 1 for now. Change them to your own
+        # level 2 files in assets/backgrounds and assets/tiles.
         "background": "bg1.png",
         "tiles": ("tile032.png", "tile033.png", "tile034.png"),
         "player_start": (80, 200),
@@ -59,7 +58,7 @@ LEVELS = [
             "x": 450, "y": 250,
             "width": 64, "height": 64,
             "end": 720,
-            "sprite_set": "goblin",
+            "sprite_set": "granny",   # <- level 2 uses the granny
         },
     },
 ]

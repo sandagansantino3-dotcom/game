@@ -8,6 +8,7 @@ ASSETS = Path(__file__).parent / "assets"
 # its file names, and how many animation frames it has.
 SPRITE_SETS = {
     "goblin": {"folder": "enemy", "suffix": "E", "count": 11},
+    "granny": {"folder": "enemy", "suffix": "G", "count": 4},
 }
 
 
@@ -17,14 +18,32 @@ def load_frames(sprite_set, side, size):
     side is "R" or "L", matching file names like R1E.png / L1E.png.
     """
     info = SPRITE_SETS[sprite_set]
+    folder = ASSETS / info["folder"]
     frames = []
 
     for i in range(1, info["count"] + 1):
-        path = ASSETS / info["folder"] / f"{side}{i}{info['suffix']}.png"
+        exact = folder / f"{side}{i}{info['suffix']}.png"
+
+        if exact.exists():
+            path = exact
+        else:
+            # Also accept names that start the same way, like
+            # "R1G (1).png" or "R1G.png.png" from a download
+            matches = sorted(folder.glob(f"{side}{i}{info['suffix']}*"))
+
+            if not matches:
+                found = sorted(p.name for p in folder.glob("*")) if folder.exists() else "(folder does not exist)"
+                raise FileNotFoundError(
+                    f"Missing {exact.name} in {folder}\nFiles in that folder: {found}"
+                )
+
+            path = matches[0]
+
         image = pygame.image.load(str(path))
         frames.append(pygame.transform.scale(image, size))
 
     return frames
+
 
 class Enemy:
     def __init__(
@@ -53,11 +72,13 @@ class Enemy:
         self.max_health = 100
         self.health = self.max_health
         self.attack_damage = 20
+
+        # Set to True when the player wins the battle
         self.defeated = False
 
         self.walk_right = load_frames(sprite_set, "R", (width, height))
         self.walk_left = load_frames(sprite_set, "L", (width, height))
-        
+
     @property
     def rect(self):
         hitbox_width = int(
