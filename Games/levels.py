@@ -35,7 +35,7 @@ LEVEL_2 = [
 LEVELS = [
     {
         "layout": LEVEL_1,
-        "background": "bg1.png",
+        "background": "parallax",
         "tiles": (
             "tile032.png",
             "tile033.png",
@@ -59,7 +59,7 @@ LEVELS = [
     },
     {
         "layout": LEVEL_2,
-        "background": "bg1.png",
+        "background": "parallax",
         "tiles": (
             "tile032.png",
             "tile033.png",

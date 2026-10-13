@@ -9,6 +9,7 @@ from player import Player
 from tilemap import TileMap
 from transition_scene import BattleTransition
 from map_scene import MapScene
+from parallax import ParallaxBackground
 
 
 pygame.init()
@@ -25,12 +26,17 @@ screen = pygame.display.set_mode(
 pygame.display.set_caption("MIGUEL")
 
 
-def load_background(filename):
+def load_background(folder_name):
     path = (
         GAME_FOLDER
         / "assets"
         / "backgrounds"
-        / filename
+        / folder_name
+    )
+
+    return ParallaxBackground(
+        path,
+        scale=2
     )
 
     image = pygame.image.load(

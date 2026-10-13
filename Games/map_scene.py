@@ -62,9 +62,9 @@ class MapScene:
     def draw(self, screen):
         self.update_camera(screen)
 
-        screen.blit(
-            self.background,
-            (0, 0)
+        self.background.draw(
+            screen,
+            self.camera_x
         )
 
         self.tile_map.draw(
