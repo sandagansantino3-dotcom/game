@@ -1,7 +1,10 @@
 from pathlib import Path
 import pygame
 
-from challenges import CHALLENGES
+from challenges import (
+    BOSS_CHALLENGES,
+    DEFAULT_CHALLENGES
+)
 
 
 class BattleScene:
@@ -9,7 +12,12 @@ class BattleScene:
         self.player = player
         self.boss = boss
         self.boss_name = boss_data["name"]
-
+        self.challenges = (
+            BOSS_CHALLENGES.get(
+            self.boss_name,
+            DEFAULT_CHALLENGES
+            )
+        )
         assets = Path(__file__).parent / "assets"
 
         background_path = (
@@ -96,7 +104,9 @@ class BattleScene:
         self.boss.attack_damage = 10
 
         self.challenge_index = 0
-        self.current_challenge = CHALLENGES[0]
+        self.current_challenge = (
+            self.challenges[0]
+        )
 
         self.answer = ""
         self.state = "answering"
@@ -282,11 +292,11 @@ class BattleScene:
     def load_next_challenge(self):
         self.challenge_index = (
             self.challenge_index + 1
-        ) % len(CHALLENGES)
+        ) % len(self.challenges)
 
         self.current_challenge = (
-            CHALLENGES[
-                self.challenge_index
+            self.challenges[
+        self.challenge_index
             ]
         )
 
@@ -308,7 +318,9 @@ class BattleScene:
         )
 
         self.challenge_index = 0
-        self.current_challenge = CHALLENGES[0]
+        self.current_challenge = (
+            self.challenges[0]
+        )
 
         self.answer = ""
         self.message = ""
