@@ -39,7 +39,7 @@ class BattleScene:
 
         self.player_image = pygame.transform.scale(
             self.player_image,
-            (190, 190)
+            (150, 150)
         )
 
         boss_image_path = (
@@ -371,7 +371,7 @@ class BattleScene:
         )
 
         player_x = int(
-            width * 0.20
+            width * 0.16
         )
 
         player_y = (
@@ -379,12 +379,13 @@ class BattleScene:
             - self.player_image.get_height()
         )
 
-        boss_x = int(
-            width * 0.62
+        boss_x = (
+            int(width * 0.84)
+            - self.boss_image.get_width()
         )
 
         boss_y = (
-            int(height * 0.68)
+            int(height * 0.62)
             - self.boss_image.get_height()
         )
 

@@ -52,8 +52,8 @@ LEVELS = [
         },
         "boss": {
             "name": "Lorna",
-            "battle_sprite": "enemy/L1G.png",
-            "battle_size": (140, 210),
+            "battle_sprite": "boss/LornaBS.png",
+            "battle_size": (110, 170),
             "battle_background": "MiguelBattleBG.png",
         },
     },
@@ -77,7 +77,7 @@ LEVELS = [
         "boss": {
             "name": "Miguel",
             "battle_sprite": "boss/MiguelBS.png",
-            "battle_size": (140, 210),
+            "battle_size": (110, 165),
             "battle_background": "MiguelBattleBG.png",
         },
     },
