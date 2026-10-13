@@ -1,3 +1,4 @@
+from pathlib import Path
 import pygame
 
 from challenges import CHALLENGES
@@ -8,35 +9,104 @@ class BattleScene:
         self.player = player
         self.boss = boss
 
-        # Temporary battle stats
+        assets = (
+            Path(__file__).parent
+            / "assets"
+        )
+
+        self.background = pygame.image.load(
+            str(
+                assets
+                / "backgrounds"
+                / "MiguelBattleBG.png"
+            )
+        ).convert()
+
+        self.background = pygame.transform.scale(
+            self.background,
+            (800, 450)
+        )
+
+        self.player_image = pygame.image.load(
+            str(
+                assets
+                / "player"
+                / "PlayerBS.png"
+            )
+        ).convert_alpha()
+
+        self.player_image = pygame.transform.scale(
+            self.player_image,
+            (190, 190)
+        )
+
+        self.boss_image = pygame.image.load(
+            str(
+                assets
+                / "boss"
+                / "MiguelBS.png"
+            )
+        ).convert_alpha()
+
+        self.boss_image = pygame.transform.scale(
+            self.boss_image,
+            (140, 210)
+        )
+
+        title_font_path = (
+            assets
+            / "fonts"
+            / "Silkscreen-Regular.ttf"
+        )
+
+        text_font_path = (
+            assets
+            / "fonts"
+            / "VT323-Regular.ttf"
+        )
+
+        self.title_font = pygame.font.Font(
+            str(title_font_path),
+            28
+        )
+
+        self.normal_font = pygame.font.Font(
+            str(text_font_path),
+            26
+        )
+
+        self.code_font = pygame.font.Font(
+            str(text_font_path),
+            26
+        )
+
+        self.small_font = pygame.font.Font(
+            str(text_font_path),
+            22
+        )
+
         self.player.max_health = 100
         self.player.health = 100
 
         self.boss.max_health = 100
         self.boss.health = 100
-        self.boss.attack_damage = 20
+        self.boss.attack_damage = 10
 
-        # Fonts
-        self.title_font = pygame.font.Font(None, 36)
-        self.normal_font = pygame.font.Font(None, 28)
-        self.code_font = pygame.font.Font(None, 26)
-        self.small_font = pygame.font.Font(None, 22)
-
-        # Challenge information
         self.challenge_index = 0
         self.current_challenge = CHALLENGES[0]
 
-        # Player's typed answer
         self.answer = ""
-
-        # Battle states: answering, feedback, victory, defeat
         self.state = "answering"
 
         self.message = ""
-        self.message_color = (255, 255, 255)
+        self.message_color = (
+            255,
+            255,
+            255
+        )
 
-        # Timer
         self.start_time = pygame.time.get_ticks()
+
         self.feedback_start = 0
         self.feedback_duration = 1200
 
@@ -60,7 +130,6 @@ class BattleScene:
 
             return
 
-        # Do not allow typing while feedback is displayed
         if self.state != "answering":
             return
 
@@ -68,49 +137,53 @@ class BattleScene:
             self.answer = self.answer[:-1]
 
         elif event.key == pygame.K_TAB:
-            # Add four spaces for Python indentation
             self.answer += "    "
 
         elif event.key == pygame.K_RETURN:
-            keys = pygame.key.get_mods()
-
-            # Shift + Enter creates a new line
-            if keys & pygame.KMOD_SHIFT:
+            if (
+                pygame.key.get_mods()
+                & pygame.KMOD_SHIFT
+            ):
                 self.answer += "\n"
-
-            # Enter submits the answer
             else:
                 self.check_answer()
 
-        else:
-            # event.unicode contains the character typed
-            if event.unicode and len(self.answer) < 300:
-                self.answer += event.unicode
-
-    # UPDATE
+        elif (
+            event.unicode
+            and len(self.answer) < 300
+        ):
+            self.answer += event.unicode
 
     def update(self):
-        if self.state == "answering":
-            if self.get_time_left() <= 0:
-                self.player.health -= self.boss.attack_damage
+        if (
+            self.state == "answering"
+            and self.get_time_left() <= 0
+        ):
+            self.player.health = max(
+                0,
+                self.player.health
+                - self.boss.attack_damage
+            )
 
-                self.player.health = max(
-                    0,
-                    self.player.health
-                )
+            self.message = (
+                "Time is up! You were damaged!"
+            )
 
-                self.message = "TIME UP! You were damaged!"
-                self.message_color = (255, 80, 80)
+            self.message_color = (
+                255,
+                80,
+                80
+            )
 
-                self.begin_feedback()
+            self.begin_feedback()
 
         elif self.state == "feedback":
-            current_time = pygame.time.get_ticks()
+            elapsed = (
+                pygame.time.get_ticks()
+                - self.feedback_start
+            )
 
-            if (
-                current_time - self.feedback_start
-                >= self.feedback_duration
-            ):
+            if elapsed >= self.feedback_duration:
                 if self.boss.health <= 0:
                     self.state = "victory"
                     self.end_start = pygame.time.get_ticks()
@@ -121,46 +194,65 @@ class BattleScene:
                 else:
                     self.load_next_challenge()
 
-    # ANSWER CHECKING
-
     def check_answer(self):
-        submitted_answer = self.answer.strip()
+        submitted = self.answer.strip()
 
-        correct_answer = (
-            self.current_challenge["answer"].strip()
+        correct = (
+            self.current_challenge["answer"]
+            .strip()
         )
 
-        if submitted_answer == correct_answer:
-            damage = self.current_challenge["damage"]
+        if submitted == correct:
+            damage = self.current_challenge[
+                "damage"
+            ]
 
-            self.boss.health -= damage
-            self.boss.health = max(0, self.boss.health)
+            self.boss.health = max(
+                0,
+                self.boss.health - damage
+            )
 
-            self.message = f"CORRECT! Boss took {damage} damage!"
-            self.message_color = (80, 255, 120)
+            self.message = (
+                f"Correct! Miguel took "
+                f"{damage} damage!"
+            )
+
+            self.message_color = (
+                80,
+                255,
+                120
+            )
 
         else:
-            self.player.health -= self.boss.attack_damage
-
             self.player.health = max(
                 0,
                 self.player.health
+                - self.boss.attack_damage
             )
 
-            self.message = "WRONG! You were damaged!"
-            self.message_color = (255, 80, 80)
+            self.message = (
+                "Wrong! You were damaged!"
+            )
+
+            self.message_color = (
+                255,
+                80,
+                80
+            )
 
         self.begin_feedback()
 
     def begin_feedback(self):
         self.state = "feedback"
-        self.feedback_start = pygame.time.get_ticks()
+
+        self.feedback_start = (
+            pygame.time.get_ticks()
+        )
 
     def load_next_challenge(self):
-        self.challenge_index += 1
-
-        if self.challenge_index >= len(CHALLENGES):
-            self.challenge_index = 0
+        self.challenge_index = (
+            self.challenge_index + 1
+        ) % len(CHALLENGES)
 
         self.current_challenge = CHALLENGES[
             self.challenge_index
@@ -169,11 +261,19 @@ class BattleScene:
         self.answer = ""
         self.message = ""
         self.state = "answering"
-        self.start_time = pygame.time.get_ticks()
+
+        self.start_time = (
+            pygame.time.get_ticks()
+        )
 
     def reset_battle(self):
-        self.player.health = self.player.max_health
-        self.boss.health = self.boss.max_health
+        self.player.health = (
+            self.player.max_health
+        )
+
+        self.boss.health = (
+            self.boss.max_health
+        )
 
         self.challenge_index = 0
         self.current_challenge = CHALLENGES[0]
@@ -181,16 +281,18 @@ class BattleScene:
         self.answer = ""
         self.message = ""
         self.state = "answering"
-        self.start_time = pygame.time.get_ticks()
 
-    # TIMER
+        self.start_time = (
+            pygame.time.get_ticks()
+        )
 
     def get_time_left(self):
         if self.state != "answering":
             return 0
 
         elapsed = (
-            pygame.time.get_ticks() - self.start_time
+            pygame.time.get_ticks()
+            - self.start_time
         ) / 1000
 
         time_limit = self.current_challenge["time"]
@@ -207,139 +309,69 @@ class BattleScene:
         width = screen.get_width()
         height = screen.get_height()
 
-        # Battle background
-        screen.fill((135, 190, 220))
-
-        # Ground
-        pygame.draw.rect(
-            screen,
-            (95, 150, 90),
-            (
-                0,
-                int(height * 0.48),
-                width,
-                int(height * 0.20)
-            )
+        screen.blit(
+            self.background,
+            (0, 0)
         )
 
-        # Battle title
         title = self.title_font.render(
-            "CODE BATTLE",
+            "Code Battle",
             True,
-            (20, 20, 30)
+            (255, 245, 255)
         )
 
         screen.blit(
             title,
             (
-                width // 2 - title.get_width() // 2,
+                width // 2
+                - title.get_width() // 2,
                 10
             )
         )
 
-        # Player is larger and closer to the screen
-        player_box = pygame.Rect(
-            int(width * 0.10),
-            int(height * 0.34),
-            int(width * 0.18),
-            int(height * 0.28)
+        player_x = int(width * 0.20)
+
+        player_y = (
+            int(height * 0.68)
+            - self.player_image.get_height()
         )
 
-        # Boss is smaller and farther from the screen
-        boss_box = pygame.Rect(
-            int(width * 0.72),
-            int(height * 0.15),
-            int(width * 0.12),
-            int(height * 0.20)
-        )
+        boss_x = int(width * 0.62)
 
-        # Player box
-        pygame.draw.rect(
-            screen,
-            (50, 120, 255),
-            player_box
-        )
-
-        pygame.draw.rect(
-            screen,
-            (20, 20, 30),
-            player_box,
-            4
-        )
-
-        # Boss box
-        pygame.draw.rect(
-            screen,
-            (220, 60, 60),
-            boss_box
-        )
-
-        pygame.draw.rect(
-            screen,
-            (20, 20, 30),
-            boss_box,
-            4
-        )
-
-        # Character labels
-        player_label = self.normal_font.render(
-            "PLAYER",
-            True,
-            (255, 255, 255)
-        )
-
-        boss_label = self.small_font.render(
-            "BOSS",
-            True,
-            (255, 255, 255)
+        boss_y = (
+            int(height * 0.60)
+            - self.boss_image.get_height()
         )
 
         screen.blit(
-            player_label,
-            (
-                player_box.centerx
-                - player_label.get_width() // 2,
-
-                player_box.centery
-                - player_label.get_height() // 2
-            )
+            self.player_image,
+            (player_x, player_y)
         )
 
         screen.blit(
-            boss_label,
-            (
-                boss_box.centerx
-                - boss_label.get_width() // 2,
-
-                boss_box.centery
-                - boss_label.get_height() // 2
-            )
-        )
-        # Health bars
-
-        self.draw_health_bar(
-            screen,
-            x=int(width * 0.05),
-            y=55,
-            bar_width=int(width * 0.30),
-            health=self.boss.health,
-            max_health=self.boss.max_health,
-            label="BOSS"
+            self.boss_image,
+            (boss_x, boss_y)
         )
 
         self.draw_health_bar(
             screen,
-            x=int(width * 0.62),
-            y=int(height * 0.45),
-            bar_width=int(width * 0.30),
-            health=self.player.health,
-            max_health=self.player.max_health,
-            label="PLAYER"
+            int(width * 0.05),
+            55,
+            int(width * 0.30),
+            self.boss.health,
+            self.boss.max_health,
+            "Miguel"
         )
 
-        # ----------------------------------------------
-        # Bottom coding panel
-        # ----------------------------------------------
+        self.draw_health_bar(
+            screen,
+            int(width * 0.62),
+            int(height * 0.45),
+            int(width * 0.30),
+            self.player.health,
+            self.player.max_health,
+            "Player"
+        )
 
         panel = pygame.Rect(
             int(width * 0.03),
@@ -363,35 +395,45 @@ class BattleScene:
             border_radius=10
         )
 
-        if self.state in ("victory", "defeat"):
-            self.draw_end_screen(screen, panel)
+        if self.state in (
+            "victory",
+            "defeat"
+        ):
+            self.draw_end_screen(
+                screen,
+                panel
+            )
+
             return
 
-        # Broken-code label
-        challenge_label = self.small_font.render(
-            "FIX THE BROKEN CODE:",
-            True,
-            (255, 220, 80)
+        challenge_label = (
+            self.small_font.render(
+                "Fix the broken code:",
+                True,
+                (255, 220, 80)
+            )
         )
 
         screen.blit(
             challenge_label,
-            (panel.x + 15, panel.y + 10)
+            (
+                panel.x + 15,
+                panel.y + 8
+            )
         )
 
-        # Broken code
         self.draw_multiline_text(
             screen,
             self.current_challenge["broken"],
             panel.x + 15,
-            panel.y + 35,
+            panel.y + 32,
             (255, 255, 255)
         )
 
-        # Answer box
         answer_box = pygame.Rect(
             panel.x + 15,
-            panel.y + int(panel.height * 0.60),
+            panel.y
+            + int(panel.height * 0.60),
             panel.width - 130,
             38
         )
@@ -410,24 +452,36 @@ class BattleScene:
         )
 
         answer_text = self.code_font.render(
-            self.answer.replace("\n", " ↵ "),
+            self.answer.replace(
+                "\n",
+                " ↵ "
+            ),
             True,
             (20, 20, 25)
+        )
+
+        old_clip = screen.get_clip()
+
+        screen.set_clip(
+            answer_box.inflate(-12, -6)
         )
 
         screen.blit(
             answer_text,
             (
                 answer_box.x + 8,
-                answer_box.y + 8
+                answer_box.y + 5
             )
         )
 
-        # Timer
-        time_left = int(self.get_time_left() + 0.99)
+        screen.set_clip(old_clip)
+
+        time_left = int(
+            self.get_time_left() + 0.99
+        )
 
         timer_text = self.normal_font.render(
-            f"TIME: {time_left}",
+            f"Time: {time_left}",
             True,
             (255, 220, 60)
         )
@@ -435,26 +489,29 @@ class BattleScene:
         screen.blit(
             timer_text,
             (
-                panel.right - timer_text.get_width() - 15,
+                panel.right
+                - timer_text.get_width()
+                - 15,
                 answer_box.y + 5
             )
         )
 
-        # Feedback message
         if self.message:
-            message_surface = self.small_font.render(
-                self.message,
-                True,
-                self.message_color
+            message_surface = (
+                self.small_font.render(
+                    self.message,
+                    True,
+                    self.message_color
+                )
             )
 
             screen.blit(
                 message_surface,
                 (
                     panel.centerx
-                    - message_surface.get_width() // 2,
-
-                    panel.bottom - 25
+                    - message_surface.get_width()
+                    // 2,
+                    panel.bottom - 24
                 )
             )
 
@@ -468,30 +525,50 @@ class BattleScene:
         max_health,
         label
     ):
-        label_surface = self.small_font.render(f"{label} HP: {health}/{max_health}",True,(20, 20, 25))
+        label_surface = (
+            self.small_font.render(
+                (
+                    f"{label} HP: "
+                    f"{health}/{max_health}"
+                ),
+                True,
+                (225, 245, 255)
+            )
+        )
 
-        screen.blit(label_surface, (x, y))
+        screen.blit(
+            label_surface,
+            (x, y)
+        )
 
         bar_y = y + 23
         bar_height = 18
 
-        # Red background
+        health_percent = (
+            health / max_health
+        )
+
         pygame.draw.rect(
             screen,
             (170, 40, 40),
-            (x, bar_y, bar_width, bar_height)
+            (
+                x,
+                bar_y,
+                bar_width,
+                bar_height
+            )
         )
 
-        health_percent = health / max_health
-
-        # Green remaining health
         pygame.draw.rect(
             screen,
             (40, 190, 80),
             (
                 x,
                 bar_y,
-                int(bar_width * health_percent),
+                int(
+                    bar_width
+                    * health_percent
+                ),
                 bar_height
             )
         )
@@ -499,34 +576,64 @@ class BattleScene:
         pygame.draw.rect(
             screen,
             (20, 20, 25),
-            (x, bar_y, bar_width, bar_height),
+            (
+                x,
+                bar_y,
+                bar_width,
+                bar_height
+            ),
             3
         )
 
-    def draw_multiline_text(self, screen, text, x, y, color):
-        for line_number, line in enumerate(text.splitlines()):
-            line_surface = self.code_font.render(
-                line,
-                True,
-                color
+    def draw_multiline_text(
+        self,
+        screen,
+        text,
+        x,
+        y,
+        color
+    ):
+        for line_number, line in enumerate(
+            text.splitlines()
+        ):
+            line_surface = (
+                self.code_font.render(
+                    line,
+                    True,
+                    color
+                )
             )
 
             screen.blit(
                 line_surface,
                 (
                     x,
-                    y + line_number * 22
+                    y + line_number * 24
                 )
             )
 
-    def draw_end_screen(self, screen, panel):
+    def draw_end_screen(
+        self,
+        screen,
+        panel
+    ):
         if self.state == "victory":
-            text = "YOU DEFEATED THE BUG!"
-            color = (80, 255, 120)
+            text = "You defeated Miguel!"
+
+            color = (
+                80,
+                255,
+                120
+            )
 
         else:
-            text = "YOU WERE DEFEATED!"
-            color = (255, 80, 80)
+            text = "You were defeated!"
+
+            color = (
+                255,
+                80,
+                80
+            )
 
         end_text = self.title_font.render(
             text,
@@ -537,8 +644,9 @@ class BattleScene:
         screen.blit(
             end_text,
             (
-                panel.centerx - end_text.get_width() // 2,
-                panel.y + 35
+                panel.centerx
+                - end_text.get_width() // 2,
+                panel.y + 30
             )
         )
 

@@ -14,15 +14,23 @@ from map_scene import MapScene
 pygame.init()
 
 GAME_FOLDER = Path(__file__).parent
-SCREEN_SIZE = (800, 448)
+
+GAME_SIZE = (800, 450)
+FULLSCREEN_SIZE = (1920, 1080)
+
+windowed_size = GAME_SIZE
+fullscreen = False
 
 clock = pygame.time.Clock()
 
 screen = pygame.display.set_mode(
-    SCREEN_SIZE
+    windowed_size,
+    pygame.RESIZABLE
 )
 
-pygame.display.set_caption("MIGUEL")
+game_surface = pygame.Surface(GAME_SIZE)
+
+pygame.display.set_caption("Miguel")
 
 
 def load_background(filename):
@@ -70,7 +78,6 @@ transition = BattleTransition()
 transition_target = "battle"
 
 current_scene = "map"
-fullscreen = False
 running = True
 
 while running:
@@ -80,28 +87,40 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
+        elif (
+            event.type == pygame.VIDEORESIZE
+            and not fullscreen
+        ):
+            windowed_size = (
+                max(400, event.w),
+                max(225, event.h)
+            )
+
+            screen = pygame.display.set_mode(
+                windowed_size,
+                pygame.RESIZABLE
+            )
+
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 running = False
 
-            elif (
-                event.key == pygame.K_f
-                and current_scene == "map"
-            ):
+            elif event.key == pygame.K_m:
+                pygame.display.iconify()
+
+            elif event.key == pygame.K_f:
                 fullscreen = not fullscreen
 
                 if fullscreen:
-                    flags = (
+                    screen = pygame.display.set_mode(
+                        FULLSCREEN_SIZE,
                         pygame.FULLSCREEN
-                        | pygame.SCALED
                     )
                 else:
-                    flags = 0
-
-                screen = pygame.display.set_mode(
-                    SCREEN_SIZE,
-                    flags
-                )
+                    screen = pygame.display.set_mode(
+                        windowed_size,
+                        pygame.RESIZABLE
+                    )
 
             elif (
                 event.key == pygame.K_SPACE
@@ -126,11 +145,11 @@ while running:
                 transition_target = "next_level"
                 transition.start()
 
-        map_scene.draw(screen)
+        map_scene.draw(game_surface)
 
     elif current_scene == "battle":
         battle.update()
-        battle.draw(screen)
+        battle.draw(game_surface)
 
         # After the victory message, go back to the map
         if (
@@ -155,7 +174,42 @@ while running:
                 current_level += 1
                 battle, map_scene = load_level(current_level)
 
-        transition.draw(screen)
+        transition.draw(game_surface)
+
+    display_width, display_height = (
+        screen.get_size()
+    )
+
+    scale = min(
+        display_width / GAME_SIZE[0],
+        display_height / GAME_SIZE[1]
+    )
+
+    scaled_size = (
+        int(GAME_SIZE[0] * scale),
+        int(GAME_SIZE[1] * scale)
+    )
+
+    scaled_game = pygame.transform.scale(
+        game_surface,
+        scaled_size
+    )
+
+    screen.fill((0, 0, 0))
+
+    screen.blit(
+        scaled_game,
+        (
+            (
+                display_width
+                - scaled_size[0]
+            ) // 2,
+            (
+                display_height
+                - scaled_size[1]
+            ) // 2
+        )
+    )
 
     pygame.display.flip()
 
