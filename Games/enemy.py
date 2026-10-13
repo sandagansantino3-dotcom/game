@@ -103,10 +103,18 @@ class Enemy:
         ]
 
         self.walk_count = 0
-        self.speed = 3
+
+        self.move_speed = 3
+        self.speed = self.move_speed
+        self.direction = 1
 
         self.velocity_y = 0
         self.gravity = 0.8
+        self.jump_speed = 12
+        self.on_ground = False
+
+        self.detection_range = 550
+        self.chasing = False
 
         self.max_health = 100
         self.health = self.max_health
@@ -155,18 +163,130 @@ class Enemy:
 
     def update(
         self,
-        solid_rects
+        solid_rects,
+        player,
+        level_width
     ):
-        dx = self.speed
+        enemy_rect = self.rect
+        player_rect = player.rect
+
+        distance_x = (
+            player_rect.centerx
+            - enemy_rect.centerx
+        )
+
+        distance_y = (
+            player_rect.centery
+            - enemy_rect.centery
+        )
+
+        self.chasing = (
+            abs(distance_x)
+            <= self.detection_range
+            and abs(distance_y) <= 260
+        )
+
+        dx = 0
+
+        if self.chasing:
+            if distance_x > 8:
+                self.direction = 1
+                dx = self.move_speed
+
+            elif distance_x < -8:
+                self.direction = -1
+                dx = -self.move_speed
+
+        else:
+            if self.x <= self.path[0]:
+                self.direction = 1
+
+            elif self.x >= self.path[1]:
+                self.direction = -1
+
+            dx = (
+                self.move_speed
+                * self.direction
+            )
+
+        self.speed = (
+            self.move_speed
+            * self.direction
+        )
 
         if (
-            self.x + dx < self.path[0]
-            or self.x + dx
-            > self.path[1]
+            dx != 0
+            and self.on_ground
         ):
-            self.speed *= -1
-            dx = self.speed
-            self.walk_count = 0
+            wall_test = (
+                self.rect.move(
+                    dx,
+                    0
+                )
+            )
+
+            wall_ahead = any(
+                wall_test.colliderect(tile)
+                for tile in solid_rects
+            )
+
+            if self.direction > 0:
+                probe_x = (
+                    wall_test.right + 2
+                )
+
+            else:
+                probe_x = (
+                    wall_test.left - 6
+                )
+
+            ground_probe = pygame.Rect(
+                probe_x,
+                wall_test.bottom + 1,
+                4,
+                14
+            )
+
+            ground_ahead = any(
+                ground_probe.colliderect(tile)
+                for tile in solid_rects
+            )
+
+            player_above = (
+                distance_y < -45
+                and abs(distance_x) < 220
+            )
+
+            if (
+                self.chasing
+                and (
+                    wall_ahead
+                    or not ground_ahead
+                    or player_above
+                )
+            ):
+                self.velocity_y = (
+                    -self.jump_speed
+                )
+
+                self.on_ground = False
+
+            elif (
+                not self.chasing
+                and (
+                    wall_ahead
+                    or not ground_ahead
+                )
+            ):
+                self.direction *= -1
+
+                self.speed = (
+                    self.move_speed
+                    * self.direction
+                )
+
+                dx = self.speed
+                self.walk_count = 0
 
         rect = self.rect
         rect.x += dx
@@ -175,12 +295,17 @@ class Enemy:
             if rect.colliderect(tile):
                 if dx > 0:
                     rect.right = tile.left
-                else:
+
+                elif dx < 0:
                     rect.left = tile.right
 
-                self.speed *= -1
-                self.walk_count = 0
                 break
+
+        if rect.left < 0:
+            rect.left = 0
+
+        if rect.right > level_width:
+            rect.right = level_width
 
         self.x = (
             rect.centerx
@@ -199,11 +324,14 @@ class Enemy:
             self.velocity_y
         )
 
+        self.on_ground = False
+
         for tile in solid_rects:
             if rect.colliderect(tile):
                 if self.velocity_y > 0:
                     rect.bottom = tile.top
                     self.velocity_y = 0
+                    self.on_ground = True
 
                 elif self.velocity_y < 0:
                     rect.top = tile.bottom
@@ -221,7 +349,7 @@ class Enemy:
     ):
         frames_per_image = 3
 
-        if self.speed > 0:
+        if self.direction > 0:
             frames = self.walk_right
         else:
             frames = self.walk_left

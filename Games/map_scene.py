@@ -21,7 +21,9 @@ class MapScene:
 
         if not self.enemy.defeated:
             self.enemy.update(
-                self.tile_map.solid_rects
+                self.tile_map.solid_rects,
+                self.player,
+                self.tile_map.width
             )
 
             if self.player.rect.colliderect(
