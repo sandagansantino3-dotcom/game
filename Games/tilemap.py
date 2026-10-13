@@ -24,18 +24,25 @@ LEVEL = [
 
 
 class TileMap:
-    def __init__(self, level=LEVEL):
+    def __init__(
+        self,
+        level=LEVEL,
+        tile_files=("tile032.png", "tile033.png", "tile034.png")
+    ):
+        # tile_files = (left corner, middle, right corner)
+        left, middle, right = tile_files
+
         self.images = {
             "<": pygame.image.load(
-                str(TILE_FOLDER / "tile032.png")
+                str(TILE_FOLDER / left)
             ).convert_alpha(),
 
             "#": pygame.image.load(
-                str(TILE_FOLDER / "tile033.png")
+                str(TILE_FOLDER / middle)
             ).convert_alpha(),
 
             ">": pygame.image.load(
-                str(TILE_FOLDER / "tile034.png")
+                str(TILE_FOLDER / right)
             ).convert_alpha(),
         }
 

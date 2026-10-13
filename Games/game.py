@@ -4,6 +4,7 @@ import pygame
 
 from battle_scene import BattleScene
 from enemy import Enemy
+from levels import LEVELS
 from player import Player
 from tilemap import TileMap
 from transition_scene import BattleTransition
@@ -23,23 +24,16 @@ screen = pygame.display.set_mode(
 
 pygame.display.set_caption("MIGUEL")
 
-background_path = (
-    GAME_FOLDER
-    / "assets"
-    / "backgrounds"
-    / "bg1.png"
-)
 
-background = pygame.image.load(
-    str(background_path)
-).convert()
+def load_background(filename):
+    """Load one background image and scale it to the screen."""
+    path = GAME_FOLDER / "assets" / "backgrounds" / filename
 
-background = pygame.transform.scale(
-    background,
-    SCREEN_SIZE
-)
+    image = pygame.image.load(str(path)).convert()
 
-tile_map = TileMap()
+    return pygame.transform.scale(image, SCREEN_SIZE)
+
+
 
 man = Player(
     80,
@@ -48,23 +42,32 @@ man = Player(
     80
 )
 
-goblin = Enemy(
-    560,
-    250,
-    64,
-    64,
-    720
-)
+
+def load_level(index):
+    """Build everything that changes from level to level."""
+    data = LEVELS[index]
+
+   
+    man.x, man.y = data["player_start"]
+    man.velocity_y = 0
+
+    background = load_background(data["background"])
+    tile_map = TileMap(data["layout"], data["tiles"])
+    enemy = Enemy(**data["enemy"])
+
+    battle = BattleScene(man, enemy)
+    map_scene = MapScene(man, enemy, tile_map, background)
+
+    return battle, map_scene
 
 
-battle = BattleScene(
-    man,
-    goblin
-)
-
-map_scene = MapScene(man, goblin, tile_map, background)
+current_level = 0
+battle, map_scene = load_level(current_level)
 
 transition = BattleTransition()
+
+
+transition_target = "battle"
 
 current_scene = "map"
 fullscreen = False
@@ -112,11 +115,16 @@ while running:
 
     if current_scene == "map":
         if not transition.active:
-            touched_enemy = map_scene.update(pygame.key.get_pressed())
+            result = map_scene.update(pygame.key.get_pressed())
 
-            if touched_enemy:
+            if result == "enemy":
+                transition_target = "battle"
                 transition.start()
-                
+
+      
+            elif result == "exit" and current_level + 1 < len(LEVELS):
+                transition_target = "next_level"
+                transition.start()
 
         map_scene.draw(screen)
 
@@ -124,9 +132,28 @@ while running:
         battle.update()
         battle.draw(screen)
 
+        # After the victory message, go back to the map
+        if (
+            battle.state == "victory"
+            and battle.victory_delay_done()
+            and not transition.active
+        ):
+            battle.boss.defeated = True
+            transition_target = "map"
+            transition.start()
+
     if transition.active:
         if transition.update():
-            current_scene = "battle"
+            # The screen is fully black right now, so it's safe to swap
+            if transition_target == "battle":
+                current_scene = "battle"
+
+            elif transition_target == "map":
+                current_scene = "map"
+
+            elif transition_target == "next_level":
+                current_level += 1
+                battle, map_scene = load_level(current_level)
 
         transition.draw(screen)
 

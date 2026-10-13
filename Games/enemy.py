@@ -53,6 +53,7 @@ class Enemy:
         self.max_health = 100
         self.health = self.max_health
         self.attack_damage = 20
+        self.defeated = False
 
         self.walk_right = load_frames(sprite_set, "R", (width, height))
         self.walk_left = load_frames(sprite_set, "L", (width, height))
