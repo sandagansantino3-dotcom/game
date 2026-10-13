@@ -29,7 +29,7 @@ screen = pygame.display.set_mode(
 
 game_surface = pygame.Surface(GAME_SIZE)
 
-pygame.display.set_caption("MIGUEL")
+pygame.display.set_caption("Miguel")
 
 background_path = (
     GAME_FOLDER
@@ -117,7 +117,6 @@ while running:
                         FULLSCREEN_SIZE,
                         pygame.FULLSCREEN
                     )
-
                 else:
                     screen = pygame.display.set_mode(
                         windowed_size,
