@@ -8,60 +8,82 @@ from challenges import (
 
 
 class BattleScene:
-    def __init__(self, player, boss, boss_data):
+    def __init__(
+        self,
+        player,
+        boss,
+        boss_data
+    ):
         self.player = player
         self.boss = boss
         self.boss_name = boss_data["name"]
+
         self.challenges = (
             BOSS_CHALLENGES.get(
-            self.boss_name,
-            DEFAULT_CHALLENGES
+                self.boss_name,
+                DEFAULT_CHALLENGES
             )
         )
-        assets = Path(__file__).parent / "assets"
+
+        assets = (
+            Path(__file__).parent
+            / "assets"
+        )
 
         background_path = (
             assets
             / "backgrounds"
-            / boss_data["battle_background"]
+            / boss_data[
+                "battle_background"
+            ]
         )
 
-        self.background = pygame.image.load(
-            str(background_path)
-        ).convert()
-
-        self.background = pygame.transform.scale(
-            self.background,
-            (800, 450)
+        self.background = (
+            pygame.image.load(
+                str(background_path)
+            ).convert()
         )
 
-        player_image_path = (
-            assets
-            / "player"
-            / "PlayerBS.png"
+        self.background = (
+            pygame.transform.scale(
+                self.background,
+                (800, 450)
+            )
         )
 
-        self.player_image = pygame.image.load(
-            str(player_image_path)
-        ).convert_alpha()
-
-        self.player_image = pygame.transform.scale(
-            self.player_image,
-            (150, 150)
+        self.player_image = (
+            pygame.image.load(
+                str(
+                    assets
+                    / "player"
+                    / "PlayerBS.png"
+                )
+            ).convert_alpha()
         )
 
-        boss_image_path = (
-            assets
-            / boss_data["battle_sprite"]
+        self.player_image = (
+            pygame.transform.scale(
+                self.player_image,
+                (150, 150)
+            )
         )
 
-        self.boss_image = pygame.image.load(
-            str(boss_image_path)
-        ).convert_alpha()
+        self.boss_image = (
+            pygame.image.load(
+                str(
+                    assets
+                    / boss_data[
+                        "battle_sprite"
+                    ]
+                )
+            ).convert_alpha()
+        )
 
-        self.boss_image = pygame.transform.scale(
-            self.boss_image,
-            boss_data["battle_size"]
+        self.boss_image = (
+            pygame.transform.scale(
+                self.boss_image,
+                boss_data["battle_size"]
+            )
         )
 
         title_font_path = (
@@ -76,24 +98,36 @@ class BattleScene:
             / "VT323-Regular.ttf"
         )
 
-        self.title_font = pygame.font.Font(
-            str(title_font_path),
-            28
+        self.text_font_path = str(
+            text_font_path
         )
 
-        self.normal_font = pygame.font.Font(
-            str(text_font_path),
-            26
+        self.title_font = (
+            pygame.font.Font(
+                str(title_font_path),
+                28
+            )
         )
 
-        self.code_font = pygame.font.Font(
-            str(text_font_path),
-            26
+        self.normal_font = (
+            pygame.font.Font(
+                self.text_font_path,
+                26
+            )
         )
 
-        self.small_font = pygame.font.Font(
-            str(text_font_path),
-            22
+        self.code_font = (
+            pygame.font.Font(
+                self.text_font_path,
+                26
+            )
+        )
+
+        self.small_font = (
+            pygame.font.Font(
+                self.text_font_path,
+                22
+            )
         )
 
         self.player.max_health = 100
@@ -104,21 +138,24 @@ class BattleScene:
         self.boss.attack_damage = 10
 
         self.challenge_index = 0
+
         self.current_challenge = (
             self.challenges[0]
         )
 
         self.answer = ""
         self.state = "answering"
-
         self.message = ""
+
         self.message_color = (
-            255,
-            255,
-            255
+            35,
+            95,
+            145
         )
 
-        self.start_time = pygame.time.get_ticks()
+        self.start_time = (
+            pygame.time.get_ticks()
+        )
 
         self.feedback_start = 0
         self.feedback_duration = 1200
@@ -126,14 +163,19 @@ class BattleScene:
 
         pygame.key.start_text_input()
 
-    def handle_event(self, event):
+    def handle_event(
+        self,
+        event
+    ):
         if self.state == "victory":
             return
 
         if self.state == "defeat":
             if (
-                event.type == pygame.KEYDOWN
-                and event.key == pygame.K_r
+                event.type
+                == pygame.KEYDOWN
+                and event.key
+                == pygame.K_r
             ):
                 self.reset_battle()
 
@@ -197,9 +239,9 @@ class BattleScene:
             )
 
             self.message_color = (
-                255,
-                80,
-                80
+                170,
+                45,
+                45
             )
 
             self.begin_feedback()
@@ -257,9 +299,9 @@ class BattleScene:
             )
 
             self.message_color = (
-                80,
-                255,
-                120
+                35,
+                125,
+                65
             )
 
         else:
@@ -275,9 +317,9 @@ class BattleScene:
             )
 
             self.message_color = (
-                255,
-                80,
-                80
+                170,
+                45,
+                45
             )
 
         self.begin_feedback()
@@ -296,7 +338,7 @@ class BattleScene:
 
         self.current_challenge = (
             self.challenges[
-        self.challenge_index
+                self.challenge_index
             ]
         )
 
@@ -318,6 +360,7 @@ class BattleScene:
         )
 
         self.challenge_index = 0
+
         self.current_challenge = (
             self.challenges[0]
         )
@@ -339,13 +382,10 @@ class BattleScene:
             - self.start_time
         ) / 1000
 
-        time_limit = (
-            self.current_challenge["time"]
-        )
-
         return max(
             0,
-            time_limit - elapsed
+            self.current_challenge["time"]
+            - elapsed
         )
 
     def victory_delay_done(
@@ -357,6 +397,421 @@ class BattleScene:
             - self.end_start
             >= delay
         )
+
+    def get_fitted_font(
+        self,
+        text,
+        max_width,
+        start_size=26,
+        minimum_size=18
+    ):
+        lines = (
+            text.splitlines()
+            or [""]
+        )
+
+        for size in range(
+            start_size,
+            minimum_size - 1,
+            -1
+        ):
+            font = pygame.font.Font(
+                self.text_font_path,
+                size
+            )
+
+            widest = max(
+                font.size(line)[0]
+                for line in lines
+            )
+
+            if widest <= max_width:
+                return font
+
+        return pygame.font.Font(
+            self.text_font_path,
+            minimum_size
+        )
+
+    def wrap_text(
+        self,
+        text,
+        font,
+        max_width
+    ):
+        wrapped = []
+
+        for source_line in (
+            text.splitlines()
+            or [""]
+        ):
+            if not source_line:
+                wrapped.append("")
+                continue
+
+            current = ""
+
+            for character in source_line:
+                test_line = (
+                    current + character
+                )
+
+                if (
+                    current
+                    and font.size(
+                        test_line
+                    )[0] > max_width
+                ):
+                    wrapped.append(current)
+                    current = character
+
+                else:
+                    current = test_line
+
+            wrapped.append(current)
+
+        return wrapped
+
+    def draw_panel_frame(
+        self,
+        screen,
+        panel
+    ):
+        pygame.draw.rect(
+            screen,
+            (231, 239, 203),
+            panel,
+            border_radius=10
+        )
+
+        pygame.draw.rect(
+            screen,
+            (70, 91, 72),
+            panel,
+            4,
+            border_radius=10
+        )
+
+    def draw_dialogue_panel(
+        self,
+        screen
+    ):
+        screen_width = (
+            screen.get_width()
+        )
+
+        screen_height = (
+            screen.get_height()
+        )
+
+        horizontal_margin = 14
+        padding = 14
+
+        panel_width = (
+            screen_width
+            - horizontal_margin * 2
+        )
+
+        content_width = (
+            panel_width
+            - padding * 2
+        )
+
+        question_width = (
+            content_width - 125
+        )
+
+        broken = (
+            self.current_challenge[
+                "broken"
+            ]
+        )
+
+        broken_lines = (
+            broken.splitlines()
+            or [""]
+        )
+
+        question_text = (
+            "Fix the broken code: "
+            + broken_lines[0]
+        )
+
+        if len(broken_lines) > 1:
+            question_text += (
+                "\n"
+                + "\n".join(
+                    broken_lines[1:]
+                )
+            )
+
+        question_font = (
+            self.get_fitted_font(
+                question_text,
+                question_width,
+                26,
+                18
+            )
+        )
+
+        question_lines = self.wrap_text(
+            question_text,
+            question_font,
+            question_width
+        )
+
+        question_line_height = max(
+            20,
+            question_font.get_linesize()
+        )
+
+        question_height = (
+            len(question_lines)
+            * question_line_height
+        )
+
+        answer_lines = (
+            self.answer.split("\n")
+        )
+
+        visible_answer_lines = (
+            answer_lines[-4:]
+        )
+
+        visible_line_count = max(
+            1,
+            len(visible_answer_lines)
+        )
+
+        answer_text = max(
+            visible_answer_lines,
+            key=len,
+            default=""
+        )
+
+        answer_font = (
+            self.get_fitted_font(
+                answer_text,
+                content_width - 44,
+                26,
+                18
+            )
+        )
+
+        answer_line_height = max(
+            22,
+            answer_font.get_linesize()
+        )
+
+        answer_box_height = max(
+            38,
+            visible_line_count
+            * answer_line_height
+            + 12
+        )
+
+        status_height = 24
+
+        panel_height = (
+            padding
+            + question_height
+            + 8
+            + answer_box_height
+            + 7
+            + status_height
+            + 8
+        )
+
+        panel = pygame.Rect(
+            horizontal_margin,
+            screen_height
+            - panel_height
+            - 8,
+            panel_width,
+            panel_height
+        )
+
+        self.draw_panel_frame(
+            screen,
+            panel
+        )
+
+        question_x = (
+            panel.x + padding
+        )
+
+        question_y = (
+            panel.y + padding - 2
+        )
+
+        for index, line in enumerate(
+            question_lines
+        ):
+            surface = question_font.render(
+                line,
+                True,
+                (28, 34, 30)
+            )
+
+            screen.blit(
+                surface,
+                (
+                    question_x,
+                    question_y
+                    + index
+                    * question_line_height
+                )
+            )
+
+        time_left = int(
+            self.get_time_left() + 0.99
+        )
+
+        timer_surface = (
+            self.normal_font.render(
+                f"Time {time_left}s",
+                True,
+                (35, 76, 120)
+            )
+        )
+
+        screen.blit(
+            timer_surface,
+            (
+                panel.right
+                - padding
+                - timer_surface.get_width(),
+                question_y
+            )
+        )
+
+        answer_box = pygame.Rect(
+            panel.x + padding,
+            question_y
+            + question_height
+            + 8,
+            content_width,
+            answer_box_height
+        )
+
+        pygame.draw.rect(
+            screen,
+            (251, 250, 232),
+            answer_box,
+            border_radius=3
+        )
+
+        pygame.draw.rect(
+            screen,
+            (42, 48, 43),
+            answer_box,
+            2,
+            border_radius=3
+        )
+
+        prompt_surface = (
+            answer_font.render(
+                ">",
+                True,
+                (25, 29, 27)
+            )
+        )
+
+        first_line_y = (
+            answer_box.y + 6
+        )
+
+        screen.blit(
+            prompt_surface,
+            (
+                answer_box.x + 8,
+                first_line_y
+            )
+        )
+
+        cursor_visible = (
+            self.state == "answering"
+            and pygame.time.get_ticks()
+            // 500 % 2 == 0
+        )
+
+        for index, line in enumerate(
+            visible_answer_lines
+        ):
+            display_line = line
+
+            if (
+                index
+                == len(
+                    visible_answer_lines
+                ) - 1
+                and cursor_visible
+            ):
+                display_line += "_"
+
+            line_surface = (
+                answer_font.render(
+                    display_line,
+                    True,
+                    (25, 29, 27)
+                )
+            )
+
+            screen.blit(
+                line_surface,
+                (
+                    answer_box.x + 30,
+                    first_line_y
+                    + index
+                    * answer_line_height
+                )
+            )
+
+        if self.message:
+            status_text = self.message
+            status_color = (
+                self.message_color
+            )
+
+        else:
+            status_text = (
+                "Shift+Enter: new line   "
+                "Tab: indent   "
+                "Enter: submit"
+            )
+
+            status_color = (
+                35,
+                76,
+                120
+            )
+
+        status_font = (
+            self.get_fitted_font(
+                status_text,
+                content_width,
+                22,
+                17
+            )
+        )
+
+        status_surface = (
+            status_font.render(
+                status_text,
+                True,
+                status_color
+            )
+        )
+
+        screen.blit(
+            status_surface,
+            (
+                panel.x + padding,
+                answer_box.bottom + 5
+            )
+        )
+
+        return panel
 
     def draw(self, screen):
         width = screen.get_width()
@@ -421,13 +876,15 @@ class BattleScene:
 
         player_bar_x = (
             player_x
-            + self.player_image.get_width() // 2
+            + self.player_image.get_width()
+            // 2
             - bar_width // 2
         )
 
         boss_bar_x = (
             boss_x
-            + self.boss_image.get_width() // 2
+            + self.boss_image.get_width()
+            // 2
             - bar_width // 2
         )
 
@@ -461,32 +918,22 @@ class BattleScene:
             self.boss_name
         )
 
-        panel = pygame.Rect(
-            int(width * 0.03),
-            int(height * 0.69),
-            int(width * 0.94),
-            int(height * 0.28)
-        )
-
-        pygame.draw.rect(
-            screen,
-            (28, 32, 42),
-            panel,
-            border_radius=10
-        )
-
-        pygame.draw.rect(
-            screen,
-            (235, 235, 245),
-            panel,
-            3,
-            border_radius=10
-        )
-
         if self.state in (
             "victory",
             "defeat"
         ):
+            panel = pygame.Rect(
+                14,
+                height - 134,
+                width - 28,
+                126
+            )
+
+            self.draw_panel_frame(
+                screen,
+                panel
+            )
+
             self.draw_end_screen(
                 screen,
                 panel
@@ -494,121 +941,7 @@ class BattleScene:
 
             return
 
-        challenge_label = (
-            self.small_font.render(
-                "Fix the broken code:",
-                True,
-                (255, 220, 80)
-            )
-        )
-
-        screen.blit(
-            challenge_label,
-            (
-                panel.x + 15,
-                panel.y + 8
-            )
-        )
-
-        self.draw_multiline_text(
-            screen,
-            self.current_challenge[
-                "broken"
-            ],
-            panel.x + 15,
-            panel.y + 32,
-            (255, 255, 255)
-        )
-
-        answer_box = pygame.Rect(
-            panel.x + 15,
-            panel.y
-            + int(panel.height * 0.60),
-            panel.width - 130,
-            38
-        )
-
-        pygame.draw.rect(
-            screen,
-            (245, 245, 245),
-            answer_box
-        )
-
-        pygame.draw.rect(
-            screen,
-            (80, 150, 255),
-            answer_box,
-            3
-        )
-
-        answer_text = self.code_font.render(
-            self.answer.replace(
-                "\n",
-                " ↵ "
-            ),
-            True,
-            (20, 20, 25)
-        )
-
-        old_clip = screen.get_clip()
-
-        screen.set_clip(
-            answer_box.inflate(
-                -12,
-                -6
-            )
-        )
-
-        screen.blit(
-            answer_text,
-            (
-                answer_box.x + 8,
-                answer_box.y + 5
-            )
-        )
-
-        screen.set_clip(old_clip)
-
-        time_left = int(
-            self.get_time_left() + 0.99
-        )
-
-        timer_text = (
-            self.normal_font.render(
-                f"Time: {time_left}",
-                True,
-                (255, 220, 60)
-            )
-        )
-
-        screen.blit(
-            timer_text,
-            (
-                panel.right
-                - timer_text.get_width()
-                - 15,
-                answer_box.y + 5
-            )
-        )
-
-        if self.message:
-            message_surface = (
-                self.small_font.render(
-                    self.message,
-                    True,
-                    self.message_color
-                )
-            )
-
-            screen.blit(
-                message_surface,
-                (
-                    panel.centerx
-                    - message_surface.get_width()
-                    // 2,
-                    panel.bottom - 24
-                )
-            )
+        self.draw_dialogue_panel(screen)
 
     def draw_health_bar(
         self,
@@ -634,7 +967,8 @@ class BattleScene:
         label_x = (
             x
             + bar_width // 2
-            - label_surface.get_width() // 2
+            - label_surface.get_width()
+            // 2
         )
 
         screen.blit(
@@ -689,33 +1023,6 @@ class BattleScene:
             3
         )
 
-    def draw_multiline_text(
-        self,
-        screen,
-        text,
-        x,
-        y,
-        color
-    ):
-        for line_number, line in enumerate(
-            text.splitlines()
-        ):
-            line_surface = (
-                self.code_font.render(
-                    line,
-                    True,
-                    color
-                )
-            )
-
-            screen.blit(
-                line_surface,
-                (
-                    x,
-                    y + line_number * 24
-                )
-            )
-
     def draw_end_screen(
         self,
         screen,
@@ -728,9 +1035,9 @@ class BattleScene:
             )
 
             color = (
-                80,
-                255,
-                120
+                35,
+                125,
+                65
             )
 
         else:
@@ -739,9 +1046,9 @@ class BattleScene:
             )
 
             color = (
-                255,
-                80,
-                80
+                170,
+                45,
+                45
             )
 
         end_text = (
@@ -758,7 +1065,7 @@ class BattleScene:
                 panel.centerx
                 - end_text.get_width()
                 // 2,
-                panel.y + 30
+                panel.y + 25
             )
         )
 
@@ -767,7 +1074,7 @@ class BattleScene:
                 self.normal_font.render(
                     "Press R to battle again",
                     True,
-                    (255, 255, 255)
+                    (35, 76, 120)
                 )
             )
 
@@ -777,6 +1084,6 @@ class BattleScene:
                     panel.centerx
                     - restart_text.get_width()
                     // 2,
-                    panel.y + 85
+                    panel.y + 75
                 )
             )
