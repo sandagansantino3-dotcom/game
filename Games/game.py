@@ -26,15 +26,23 @@ pygame.display.set_caption("MIGUEL")
 
 
 def load_background(filename):
-    """Load one background image and scale it to the screen."""
-    path = GAME_FOLDER / "assets" / "backgrounds" / filename
+    path = (
+        GAME_FOLDER
+        / "assets"
+        / "backgrounds"
+        / filename
+    )
 
-    image = pygame.image.load(str(path)).convert()
+    image = pygame.image.load(
+        str(path)
+    ).convert()
 
-    return pygame.transform.scale(image, SCREEN_SIZE)
+    return pygame.transform.scale(
+        image,
+        SCREEN_SIZE
+    )
 
 
-# The player is created once, so the same character is used in every level
 man = Player(
     80,
     200,
@@ -44,29 +52,47 @@ man = Player(
 
 
 def load_level(index):
-    """Build everything that changes from level to level."""
     data = LEVELS[index]
 
-    # Put the player back at this level's starting spot
     man.x, man.y = data["player_start"]
     man.velocity_y = 0
 
-    background = load_background(data["background"])
-    tile_map = TileMap(data["layout"], data["tiles"])
-    enemy = Enemy(**data["enemy"])
+    background = load_background(
+        data["background"]
+    )
 
-    battle = BattleScene(man, enemy)
-    map_scene = MapScene(man, enemy, tile_map, background)
+    tile_map = TileMap(
+        data["layout"],
+        data["tiles"]
+    )
+
+    enemy = Enemy(
+        **data["enemy"]
+    )
+
+    battle = BattleScene(
+        man,
+        enemy,
+        data["boss"]
+    )
+
+    map_scene = MapScene(
+        man,
+        enemy,
+        tile_map,
+        background
+    )
 
     return battle, map_scene
 
 
 current_level = 0
-battle, map_scene = load_level(current_level)
+
+battle, map_scene = load_level(
+    current_level
+)
 
 transition = BattleTransition()
-
-# What the running transition is for: "battle", "map" or "next_level"
 transition_target = "battle"
 
 current_scene = "map"
@@ -104,6 +130,12 @@ while running:
                 )
 
             elif (
+                event.key == pygame.K_m
+                and not fullscreen
+            ):
+                pygame.display.iconify()
+
+            elif (
                 event.key == pygame.K_SPACE
                 and current_scene == "map"
                 and not transition.active
@@ -115,16 +147,25 @@ while running:
 
     if current_scene == "map":
         if not transition.active:
-            result = map_scene.update(pygame.key.get_pressed())
+            keys = pygame.key.get_pressed()
 
-            # Touched the enemy: go to the battle
+            result = map_scene.update(
+                keys
+            )
+
             if result == "enemy":
                 transition_target = "battle"
                 transition.start()
 
-            # Enemy defeated and player reached the edge: next level
-            elif result == "exit" and current_level + 1 < len(LEVELS):
-                transition_target = "next_level"
+            elif (
+                result == "exit"
+                and current_level + 1
+                < len(LEVELS)
+            ):
+                transition_target = (
+                    "next_level"
+                )
+
                 transition.start()
 
         map_scene.draw(screen)
@@ -133,7 +174,6 @@ while running:
         battle.update()
         battle.draw(screen)
 
-        # After the victory message, go back to the map
         if (
             battle.state == "victory"
             and battle.victory_delay_done()
@@ -145,16 +185,21 @@ while running:
 
     if transition.active:
         if transition.update():
-            # The screen is fully black right now, so it's safe to swap
             if transition_target == "battle":
                 current_scene = "battle"
 
             elif transition_target == "map":
                 current_scene = "map"
 
-            elif transition_target == "next_level":
+            elif (
+                transition_target
+                == "next_level"
+            ):
                 current_level += 1
-                battle, map_scene = load_level(current_level)
+
+                battle, map_scene = (
+                    load_level(current_level)
+                )
 
         transition.draw(screen)
 

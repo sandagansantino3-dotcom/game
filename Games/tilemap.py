@@ -3,7 +3,12 @@ import pygame
 
 
 TILE_SIZE = 32
-TILE_FOLDER = Path(__file__).parent / "assets" / "tiles"
+
+TILE_FOLDER = (
+    Path(__file__).parent
+    / "assets"
+    / "tiles"
+)
 
 LEVEL = [
     ".........................",
@@ -27,9 +32,12 @@ class TileMap:
     def __init__(
         self,
         level=LEVEL,
-        tile_files=("tile032.png", "tile033.png", "tile034.png")
+        tile_files=(
+            "tile032.png",
+            "tile033.png",
+            "tile034.png"
+        )
     ):
-        # tile_files = (left corner, middle, right corner)
         left, middle, right = tile_files
 
         self.images = {
@@ -48,8 +56,12 @@ class TileMap:
 
         self.tiles = []
 
-        for row_number, row in enumerate(level):
-            for column_number, symbol in enumerate(row):
+        for row_number, row in enumerate(
+            level
+        ):
+            for column_number, symbol in enumerate(
+                row
+            ):
                 if symbol != ".":
                     rect = pygame.Rect(
                         column_number * TILE_SIZE,
@@ -59,16 +71,42 @@ class TileMap:
                     )
 
                     self.tiles.append(
-                        (self.images[symbol], rect)
+                        (
+                            self.images[symbol],
+                            rect
+                        )
                     )
 
         self.solid_rects = [
-            rect for _, rect in self.tiles
+            rect
+            for _, rect in self.tiles
         ]
 
-        self.width = len(level[0]) * TILE_SIZE
-        self.height = len(level) * TILE_SIZE
+        self.width = (
+            len(level[0]) * TILE_SIZE
+        )
 
-    def draw(self, screen):
+        self.height = (
+            len(level) * TILE_SIZE
+        )
+
+    def draw(
+        self,
+        screen,
+        camera_x=0
+    ):
         for image, rect in self.tiles:
-            screen.blit(image, rect)
+            draw_rect = rect.move(
+                -camera_x,
+                0
+            )
+
+            if (
+                draw_rect.right >= 0
+                and draw_rect.left
+                <= screen.get_width()
+            ):
+                screen.blit(
+                    image,
+                    draw_rect
+                )

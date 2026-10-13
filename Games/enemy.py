@@ -2,45 +2,81 @@ from pathlib import Path
 import pygame
 
 
-ASSETS = Path(__file__).parent / "assets"
+ASSETS = (
+    Path(__file__).parent
+    / "assets"
+)
 
-# One entry per enemy type: its image folder, the letter at the end of
-# its file names, and how many animation frames it has.
 SPRITE_SETS = {
-    "goblin": {"folder": "enemy", "suffix": "E", "count": 11},
-    "granny": {"folder": "enemy", "suffix": "G", "count": 4},
+    "goblin": {
+        "folder": "enemy",
+        "suffix": "E",
+        "count": 11
+    },
+    "granny": {
+        "folder": "enemy",
+        "suffix": "G",
+        "count": 4
+    },
 }
 
 
-def load_frames(sprite_set, side, size):
-    """Load and resize the walking frames for one direction.
+def load_frames(
+    sprite_set,
+    side,
+    size
+):
+    info = SPRITE_SETS[
+        sprite_set
+    ]
 
-    side is "R" or "L", matching file names like R1E.png / L1E.png.
-    """
-    info = SPRITE_SETS[sprite_set]
-    folder = ASSETS / info["folder"]
+    folder = (
+        ASSETS
+        / info["folder"]
+    )
+
     frames = []
 
-    for i in range(1, info["count"] + 1):
-        exact = folder / f"{side}{i}{info['suffix']}.png"
+    for i in range(
+        1,
+        info["count"] + 1
+    ):
+        exact = (
+            folder
+            / (
+                f"{side}{i}"
+                f"{info['suffix']}.png"
+            )
+        )
 
         if exact.exists():
             path = exact
+
         else:
-            # Also accept names that start the same way, like
-            # "R1G (1).png" or "R1G.png.png" from a download
-            matches = sorted(folder.glob(f"{side}{i}{info['suffix']}*"))
+            matches = sorted(
+                folder.glob(
+                    f"{side}{i}"
+                    f"{info['suffix']}*"
+                )
+            )
 
             if not matches:
-                found = sorted(p.name for p in folder.glob("*")) if folder.exists() else "(folder does not exist)"
                 raise FileNotFoundError(
-                    f"Missing {exact.name} in {folder}\nFiles in that folder: {found}"
+                    f"Missing {exact.name}"
                 )
 
             path = matches[0]
 
-        image = pygame.image.load(str(path))
-        frames.append(pygame.transform.scale(image, size))
+        image = pygame.image.load(
+            str(path)
+        )
+
+        frames.append(
+            pygame.transform.scale(
+                image,
+                size
+            )
+        )
 
     return frames
 
@@ -61,7 +97,10 @@ class Enemy:
         self.width = width
         self.height = height
 
-        self.path = [x, end]
+        self.path = [
+            x,
+            end
+        ]
 
         self.walk_count = 0
         self.speed = 3
@@ -73,11 +112,19 @@ class Enemy:
         self.health = self.max_health
         self.attack_damage = 20
 
-        # Set to True when the player wins the battle
         self.defeated = False
 
-        self.walk_right = load_frames(sprite_set, "R", (width, height))
-        self.walk_left = load_frames(sprite_set, "L", (width, height))
+        self.walk_right = load_frames(
+            sprite_set,
+            "R",
+            (width, height)
+        )
+
+        self.walk_left = load_frames(
+            sprite_set,
+            "L",
+            (width, height)
+        )
 
     @property
     def rect(self):
@@ -92,7 +139,10 @@ class Enemy:
         return pygame.Rect(
             round(
                 self.x
-                + (self.width - hitbox_width) / 2
+                + (
+                    self.width
+                    - hitbox_width
+                ) / 2
             ),
             round(
                 self.y
@@ -103,12 +153,16 @@ class Enemy:
             hitbox_height
         )
 
-    def update(self, solid_rects):
+    def update(
+        self,
+        solid_rects
+    ):
         dx = self.speed
 
         if (
             self.x + dx < self.path[0]
-            or self.x + dx > self.path[1]
+            or self.x + dx
+            > self.path[1]
         ):
             self.speed *= -1
             dx = self.speed
@@ -129,16 +183,21 @@ class Enemy:
                 break
 
         self.x = (
-            rect.centerx - self.width / 2
+            rect.centerx
+            - self.width / 2
         )
 
         self.velocity_y = min(
-            self.velocity_y + self.gravity,
+            self.velocity_y
+            + self.gravity,
             16
         )
 
         rect = self.rect
-        rect.y += round(self.velocity_y)
+
+        rect.y += round(
+            self.velocity_y
+        )
 
         for tile in solid_rects:
             if rect.colliderect(tile):
@@ -150,9 +209,16 @@ class Enemy:
                     rect.top = tile.bottom
                     self.velocity_y = 0
 
-        self.y = rect.bottom - self.height
+        self.y = (
+            rect.bottom
+            - self.height
+        )
 
-    def draw(self, window):
+    def draw(
+        self,
+        window,
+        camera_x=0
+    ):
         frames_per_image = 3
 
         if self.speed > 0:
@@ -161,10 +227,13 @@ class Enemy:
             frames = self.walk_left
 
         animation_length = (
-            len(frames) * frames_per_image
+            len(frames)
+            * frames_per_image
         )
 
-        self.walk_count %= animation_length
+        self.walk_count %= (
+            animation_length
+        )
 
         frame = (
             self.walk_count
@@ -173,7 +242,12 @@ class Enemy:
 
         window.blit(
             frames[frame],
-            (round(self.x), round(self.y))
+            (
+                round(
+                    self.x - camera_x
+                ),
+                round(self.y)
+            )
         )
 
         self.walk_count += 1
@@ -184,6 +258,7 @@ class Enemy:
             self.x
             + self.width / 2
             - bar_width / 2
+            - camera_x
         )
 
         bar_y = self.y - 15

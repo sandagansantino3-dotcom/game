@@ -2,29 +2,48 @@ from pathlib import Path
 import pygame
 
 
-PLAYER_ASSETS = Path(__file__).parent / "assets" / "player"
+PLAYER_ASSETS = (
+    Path(__file__).parent
+    / "assets"
+    / "player"
+)
 
 walk_right_images = [
     pygame.image.load(
-        str(PLAYER_ASSETS / f"R{i}.png")
+        str(
+            PLAYER_ASSETS
+            / f"R{i}.png"
+        )
     )
     for i in range(8)
 ]
 
 walk_left_images = [
     pygame.image.load(
-        str(PLAYER_ASSETS / f"L{i}.png")
+        str(
+            PLAYER_ASSETS
+            / f"L{i}.png"
+        )
     )
     for i in range(1, 9)
 ]
 
 standing_image = pygame.image.load(
-    str(PLAYER_ASSETS / "standing.png")
+    str(
+        PLAYER_ASSETS
+        / "standing.png"
+    )
 )
 
 
 class Player:
-    def __init__(self, x, y, width, height):
+    def __init__(
+        self,
+        x,
+        y,
+        width,
+        height
+    ):
         self.x = float(x)
         self.y = float(y)
 
@@ -60,20 +79,30 @@ class Player:
             for image in walk_left_images
         ]
 
-        self.standing = pygame.transform.scale(
-            standing_image,
-            (width, height)
+        self.standing = (
+            pygame.transform.scale(
+                standing_image,
+                (width, height)
+            )
         )
 
     @property
     def rect(self):
-        hitbox_width = int(self.width * 0.5)
-        hitbox_height = int(self.height * 0.8)
+        hitbox_width = int(
+            self.width * 0.5
+        )
+
+        hitbox_height = int(
+            self.height * 0.8
+        )
 
         return pygame.Rect(
             round(
                 self.x
-                + (self.width - hitbox_width) / 2
+                + (
+                    self.width
+                    - hitbox_width
+                ) / 2
             ),
             round(
                 self.y
@@ -86,7 +115,10 @@ class Player:
 
     def jump(self):
         if self.on_ground:
-            self.velocity_y = -self.jump_speed
+            self.velocity_y = (
+                -self.jump_speed
+            )
+
             self.on_ground = False
 
     def update(
@@ -130,16 +162,22 @@ class Player:
             rect.right = level_width
 
         self.x = (
-            rect.centerx - self.width / 2
+            rect.centerx
+            - self.width / 2
         )
 
         self.velocity_y = min(
-            self.velocity_y + self.gravity,
+            self.velocity_y
+            + self.gravity,
             16
         )
 
         rect = self.rect
-        rect.y += round(self.velocity_y)
+
+        rect.y += round(
+            self.velocity_y
+        )
+
         self.on_ground = False
 
         for tile in solid_rects:
@@ -153,9 +191,16 @@ class Player:
                     rect.top = tile.bottom
                     self.velocity_y = 0
 
-        self.y = rect.bottom - self.height
+        self.y = (
+            rect.bottom
+            - self.height
+        )
 
-    def draw(self, window):
+    def draw(
+        self,
+        window,
+        camera_x=0
+    ):
         frames_per_image = 3
 
         if self.left or self.right:
@@ -165,10 +210,13 @@ class Player:
                 frames = self.walk_right
 
             animation_length = (
-                len(frames) * frames_per_image
+                len(frames)
+                * frames_per_image
             )
 
-            self.walk_count %= animation_length
+            self.walk_count %= (
+                animation_length
+            )
 
             frame = (
                 self.walk_count
@@ -181,9 +229,16 @@ class Player:
         else:
             image = self.standing
 
+        draw_x = (
+            self.x - camera_x
+        )
+
         window.blit(
             image,
-            (round(self.x), round(self.y))
+            (
+                round(draw_x),
+                round(self.y)
+            )
         )
 
         bar_width = self.width
@@ -192,6 +247,7 @@ class Player:
             self.x
             + self.width / 2
             - bar_width / 2
+            - camera_x
         )
 
         bar_y = self.y - 15

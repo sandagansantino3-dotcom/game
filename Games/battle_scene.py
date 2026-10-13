@@ -5,52 +5,84 @@ from challenges import CHALLENGES
 
 
 class BattleScene:
-    def __init__(self, player, boss):
+    def __init__(
+        self,
+        player,
+        boss,
+        boss_data
+    ):
         self.player = player
         self.boss = boss
+
+        self.boss_name = boss_data[
+            "name"
+        ]
 
         assets = (
             Path(__file__).parent
             / "assets"
         )
 
-        self.background = pygame.image.load(
-            str(
-                assets
-                / "backgrounds"
-                / "MiguelBattleBG.png"
-            )
-        ).convert()
-
-        self.background = pygame.transform.scale(
-            self.background,
-            (800, 450)
+        background_path = (
+            assets
+            / "backgrounds"
+            / boss_data[
+                "battle_background"
+            ]
         )
 
-        self.player_image = pygame.image.load(
-            str(
-                assets
-                / "player"
-                / "PlayerBS.png"
-            )
-        ).convert_alpha()
-
-        self.player_image = pygame.transform.scale(
-            self.player_image,
-            (190, 190)
+        self.background = (
+            pygame.image.load(
+                str(background_path)
+            ).convert()
         )
 
-        self.boss_image = pygame.image.load(
-            str(
-                assets
-                / "boss"
-                / "MiguelBS.png"
+        self.background = (
+            pygame.transform.scale(
+                self.background,
+                (800, 450)
             )
-        ).convert_alpha()
+        )
 
-        self.boss_image = pygame.transform.scale(
-            self.boss_image,
-            (140, 210)
+        player_image_path = (
+            assets
+            / "player"
+            / "PlayerBS.png"
+        )
+
+        self.player_image = (
+            pygame.image.load(
+                str(player_image_path)
+            ).convert_alpha()
+        )
+
+        self.player_image = (
+            pygame.transform.scale(
+                self.player_image,
+                (190, 190)
+            )
+        )
+
+        boss_image_path = (
+            assets
+            / boss_data[
+                "battle_sprite"
+            ]
+        )
+
+        self.boss_image = (
+            pygame.image.load(
+                str(boss_image_path)
+            ).convert_alpha()
+        )
+
+        self.boss_image = (
+            pygame.transform.scale(
+                self.boss_image,
+                boss_data[
+                    "battle_size"
+                ]
+            )
         )
 
         title_font_path = (
@@ -65,24 +97,32 @@ class BattleScene:
             / "VT323-Regular.ttf"
         )
 
-        self.title_font = pygame.font.Font(
-            str(title_font_path),
-            28
+        self.title_font = (
+            pygame.font.Font(
+                str(title_font_path),
+                28
+            )
         )
 
-        self.normal_font = pygame.font.Font(
-            str(text_font_path),
-            26
+        self.normal_font = (
+            pygame.font.Font(
+                str(text_font_path),
+                26
+            )
         )
 
-        self.code_font = pygame.font.Font(
-            str(text_font_path),
-            26
+        self.code_font = (
+            pygame.font.Font(
+                str(text_font_path),
+                26
+            )
         )
 
-        self.small_font = pygame.font.Font(
-            str(text_font_path),
-            22
+        self.small_font = (
+            pygame.font.Font(
+                str(text_font_path),
+                22
+            )
         )
 
         self.player.max_health = 100
@@ -93,39 +133,46 @@ class BattleScene:
         self.boss.attack_damage = 10
 
         self.challenge_index = 0
-        self.current_challenge = CHALLENGES[0]
+
+        self.current_challenge = (
+            CHALLENGES[0]
+        )
 
         self.answer = ""
         self.state = "answering"
 
         self.message = ""
+
         self.message_color = (
             255,
             255,
             255
         )
 
-        self.start_time = pygame.time.get_ticks()
+        self.start_time = (
+            pygame.time.get_ticks()
+        )
 
         self.feedback_start = 0
         self.feedback_duration = 1200
-
-        # When the victory screen started (used for the short pause)
         self.end_start = 0
 
-    # EVENT HANDLING
+        pygame.key.start_text_input()
 
-    def handle_event(self, event):
-        if event.type != pygame.KEYDOWN:
-            return
-
-        # After a victory, the game moves on by itself
+    def handle_event(
+        self,
+        event
+    ):
         if self.state == "victory":
             return
 
-        # Restart the battle after losing
         if self.state == "defeat":
-            if event.key == pygame.K_r:
+            if (
+                event.type
+                == pygame.KEYDOWN
+                and event.key
+                == pygame.K_r
+            ):
                 self.reset_battle()
 
             return
@@ -133,26 +180,43 @@ class BattleScene:
         if self.state != "answering":
             return
 
+        if event.type == pygame.TEXTINPUT:
+            remaining = (
+                300 - len(self.answer)
+            )
+
+            if remaining > 0:
+                self.answer += (
+                    event.text[:remaining]
+                )
+
+            return
+
+        if event.type != pygame.KEYDOWN:
+            return
+
         if event.key == pygame.K_BACKSPACE:
             self.answer = self.answer[:-1]
 
         elif event.key == pygame.K_TAB:
-            self.answer += "    "
+            remaining = (
+                300 - len(self.answer)
+            )
+
+            self.answer += (
+                "    "[:remaining]
+            )
 
         elif event.key == pygame.K_RETURN:
             if (
                 pygame.key.get_mods()
                 & pygame.KMOD_SHIFT
             ):
-                self.answer += "\n"
+                if len(self.answer) < 300:
+                    self.answer += "\n"
+
             else:
                 self.check_answer()
-
-        elif (
-            event.unicode
-            and len(self.answer) < 300
-        ):
-            self.answer += event.unicode
 
     def update(self):
         if (
@@ -166,7 +230,8 @@ class BattleScene:
             )
 
             self.message = (
-                "Time is up! You were damaged!"
+                "Time is up! "
+                "You were damaged!"
             )
 
             self.message_color = (
@@ -183,10 +248,16 @@ class BattleScene:
                 - self.feedback_start
             )
 
-            if elapsed >= self.feedback_duration:
+            if (
+                elapsed
+                >= self.feedback_duration
+            ):
                 if self.boss.health <= 0:
                     self.state = "victory"
-                    self.end_start = pygame.time.get_ticks()
+
+                    self.end_start = (
+                        pygame.time.get_ticks()
+                    )
 
                 elif self.player.health <= 0:
                     self.state = "defeat"
@@ -195,17 +266,22 @@ class BattleScene:
                     self.load_next_challenge()
 
     def check_answer(self):
-        submitted = self.answer.strip()
+        submitted = (
+            self.answer.strip()
+        )
 
         correct = (
-            self.current_challenge["answer"]
-            .strip()
+            self.current_challenge[
+                "answer"
+            ].strip()
         )
 
         if submitted == correct:
-            damage = self.current_challenge[
-                "damage"
-            ]
+            damage = (
+                self.current_challenge[
+                    "damage"
+                ]
+            )
 
             self.boss.health = max(
                 0,
@@ -213,7 +289,8 @@ class BattleScene:
             )
 
             self.message = (
-                f"Correct! Miguel took "
+                f"Correct! "
+                f"{self.boss_name} took "
                 f"{damage} damage!"
             )
 
@@ -231,7 +308,8 @@ class BattleScene:
             )
 
             self.message = (
-                "Wrong! You were damaged!"
+                "Wrong! "
+                "You were damaged!"
             )
 
             self.message_color = (
@@ -254,9 +332,11 @@ class BattleScene:
             self.challenge_index + 1
         ) % len(CHALLENGES)
 
-        self.current_challenge = CHALLENGES[
-            self.challenge_index
-        ]
+        self.current_challenge = (
+            CHALLENGES[
+                self.challenge_index
+            ]
+        )
 
         self.answer = ""
         self.message = ""
@@ -276,7 +356,10 @@ class BattleScene:
         )
 
         self.challenge_index = 0
-        self.current_challenge = CHALLENGES[0]
+
+        self.current_challenge = (
+            CHALLENGES[0]
+        )
 
         self.answer = ""
         self.message = ""
@@ -295,15 +378,26 @@ class BattleScene:
             - self.start_time
         ) / 1000
 
-        time_limit = self.current_challenge["time"]
+        time_limit = (
+            self.current_challenge[
+                "time"
+            ]
+        )
 
-        return max(0, time_limit - elapsed)
+        return max(
+            0,
+            time_limit - elapsed
+        )
 
-    def victory_delay_done(self, delay=1500):
-        """True once the victory message has been shown long enough."""
-        return pygame.time.get_ticks() - self.end_start >= delay
-
-    # DRAWING
+    def victory_delay_done(
+        self,
+        delay=1500
+    ):
+        return (
+            pygame.time.get_ticks()
+            - self.end_start
+            >= delay
+        )
 
     def draw(self, screen):
         width = screen.get_width()
@@ -329,14 +423,18 @@ class BattleScene:
             )
         )
 
-        player_x = int(width * 0.20)
+        player_x = int(
+            width * 0.20
+        )
 
         player_y = (
             int(height * 0.68)
             - self.player_image.get_height()
         )
 
-        boss_x = int(width * 0.62)
+        boss_x = int(
+            width * 0.62
+        )
 
         boss_y = (
             int(height * 0.60)
@@ -345,12 +443,18 @@ class BattleScene:
 
         screen.blit(
             self.player_image,
-            (player_x, player_y)
+            (
+                player_x,
+                player_y
+            )
         )
 
         screen.blit(
             self.boss_image,
-            (boss_x, boss_y)
+            (
+                boss_x,
+                boss_y
+            )
         )
 
         self.draw_health_bar(
@@ -360,7 +464,7 @@ class BattleScene:
             int(width * 0.30),
             self.boss.health,
             self.boss.max_health,
-            "Miguel"
+            self.boss_name
         )
 
         self.draw_health_bar(
@@ -424,7 +528,9 @@ class BattleScene:
 
         self.draw_multiline_text(
             screen,
-            self.current_challenge["broken"],
+            self.current_challenge[
+                "broken"
+            ],
             panel.x + 15,
             panel.y + 32,
             (255, 255, 255)
@@ -451,19 +557,24 @@ class BattleScene:
             3
         )
 
-        answer_text = self.code_font.render(
-            self.answer.replace(
-                "\n",
-                " ↵ "
-            ),
-            True,
-            (20, 20, 25)
+        answer_text = (
+            self.code_font.render(
+                self.answer.replace(
+                    "\n",
+                    " ↵ "
+                ),
+                True,
+                (20, 20, 25)
+            )
         )
 
         old_clip = screen.get_clip()
 
         screen.set_clip(
-            answer_box.inflate(-12, -6)
+            answer_box.inflate(
+                -12,
+                -6
+            )
         )
 
         screen.blit(
@@ -480,10 +591,12 @@ class BattleScene:
             self.get_time_left() + 0.99
         )
 
-        timer_text = self.normal_font.render(
-            f"Time: {time_left}",
-            True,
-            (255, 220, 60)
+        timer_text = (
+            self.normal_font.render(
+                f"Time: {time_left}",
+                True,
+                (255, 220, 60)
+            )
         )
 
         screen.blit(
@@ -608,7 +721,8 @@ class BattleScene:
                 line_surface,
                 (
                     x,
-                    y + line_number * 24
+                    y
+                    + line_number * 24
                 )
             )
 
@@ -618,7 +732,10 @@ class BattleScene:
         panel
     ):
         if self.state == "victory":
-            text = "You defeated Miguel!"
+            text = (
+                f"You defeated "
+                f"{self.boss_name}!"
+            )
 
             color = (
                 80,
@@ -627,7 +744,9 @@ class BattleScene:
             )
 
         else:
-            text = "You were defeated!"
+            text = (
+                "You were defeated!"
+            )
 
             color = (
                 255,
@@ -635,35 +754,39 @@ class BattleScene:
                 80
             )
 
-        end_text = self.title_font.render(
-            text,
-            True,
-            color
+        end_text = (
+            self.title_font.render(
+                text,
+                True,
+                color
+            )
         )
 
         screen.blit(
             end_text,
             (
                 panel.centerx
-                - end_text.get_width() // 2,
+                - end_text.get_width()
+                // 2,
                 panel.y + 30
             )
         )
 
-        # Only offer a restart after a defeat
         if self.state == "defeat":
-            restart_text = self.normal_font.render(
-                "Press R to battle again",
-                True,
-                (255, 255, 255)
+            restart_text = (
+                self.normal_font.render(
+                    "Press R to battle again",
+                    True,
+                    (255, 255, 255)
+                )
             )
 
             screen.blit(
                 restart_text,
                 (
                     panel.centerx
-                    - restart_text.get_width() // 2,
-
+                    - restart_text.get_width()
+                    // 2,
                     panel.y + 85
                 )
             )
