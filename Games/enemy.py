@@ -234,7 +234,6 @@ class Enemy:
                 probe_x = (
                     wall_test.right + 2
                 )
-
             else:
                 probe_x = (
                     wall_test.left - 6
@@ -368,28 +367,48 @@ class Enemy:
             // frames_per_image
         )
 
+        image = frames[frame]
+
+        draw_x = round(
+            self.x - camera_x
+        )
+
+        draw_y = round(
+            self.y
+        )
+
         window.blit(
-            frames[frame],
+            image,
             (
-                round(
-                    self.x - camera_x
-                ),
-                round(self.y)
+                draw_x,
+                draw_y
             )
         )
 
         self.walk_count += 1
 
-        bar_width = 50
-
-        bar_x = (
-            self.x
-            + self.width / 2
-            - bar_width / 2
-            - camera_x
+        sprite_rect = image.get_rect(
+            topleft=(
+                draw_x,
+                draw_y
+            )
         )
 
-        bar_y = self.y - 15
+        bar_width = max(
+            40,
+            int(
+                sprite_rect.width * 0.8
+            )
+        )
+
+        bar_x = (
+            sprite_rect.centerx
+            - bar_width // 2
+        )
+
+        bar_y = (
+            sprite_rect.top - 15
+        )
 
         health_width = int(
             bar_width

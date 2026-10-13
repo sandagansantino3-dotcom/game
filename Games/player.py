@@ -241,16 +241,25 @@ class Player:
             )
         )
 
-        bar_width = self.width
-
-        bar_x = (
-            self.x
-            + self.width / 2
-            - bar_width / 2
-            - camera_x
+        sprite_rect = image.get_rect(
+            topleft=(
+                round(draw_x),
+                round(self.y)
+            )
         )
 
-        bar_y = self.y - 15
+        bar_width = int(
+            sprite_rect.width * 0.8
+        )
+
+        bar_x = (
+            sprite_rect.centerx
+            - bar_width // 2
+        )
+
+        bar_y = (
+            sprite_rect.top - 15
+        )
 
         health_width = int(
             bar_width

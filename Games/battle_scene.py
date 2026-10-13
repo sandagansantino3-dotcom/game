@@ -5,43 +5,26 @@ from challenges import CHALLENGES
 
 
 class BattleScene:
-    def __init__(
-        self,
-        player,
-        boss,
-        boss_data
-    ):
+    def __init__(self, player, boss, boss_data):
         self.player = player
         self.boss = boss
+        self.boss_name = boss_data["name"]
 
-        self.boss_name = boss_data[
-            "name"
-        ]
-
-        assets = (
-            Path(__file__).parent
-            / "assets"
-        )
+        assets = Path(__file__).parent / "assets"
 
         background_path = (
             assets
             / "backgrounds"
-            / boss_data[
-                "battle_background"
-            ]
+            / boss_data["battle_background"]
         )
 
-        self.background = (
-            pygame.image.load(
-                str(background_path)
-            ).convert()
-        )
+        self.background = pygame.image.load(
+            str(background_path)
+        ).convert()
 
-        self.background = (
-            pygame.transform.scale(
-                self.background,
-                (800, 450)
-            )
+        self.background = pygame.transform.scale(
+            self.background,
+            (800, 450)
         )
 
         player_image_path = (
@@ -50,39 +33,27 @@ class BattleScene:
             / "PlayerBS.png"
         )
 
-        self.player_image = (
-            pygame.image.load(
-                str(player_image_path)
-            ).convert_alpha()
-        )
+        self.player_image = pygame.image.load(
+            str(player_image_path)
+        ).convert_alpha()
 
-        self.player_image = (
-            pygame.transform.scale(
-                self.player_image,
-                (190, 190)
-            )
+        self.player_image = pygame.transform.scale(
+            self.player_image,
+            (190, 190)
         )
 
         boss_image_path = (
             assets
-            / boss_data[
-                "battle_sprite"
-            ]
+            / boss_data["battle_sprite"]
         )
 
-        self.boss_image = (
-            pygame.image.load(
-                str(boss_image_path)
-            ).convert_alpha()
-        )
+        self.boss_image = pygame.image.load(
+            str(boss_image_path)
+        ).convert_alpha()
 
-        self.boss_image = (
-            pygame.transform.scale(
-                self.boss_image,
-                boss_data[
-                    "battle_size"
-                ]
-            )
+        self.boss_image = pygame.transform.scale(
+            self.boss_image,
+            boss_data["battle_size"]
         )
 
         title_font_path = (
@@ -97,32 +68,24 @@ class BattleScene:
             / "VT323-Regular.ttf"
         )
 
-        self.title_font = (
-            pygame.font.Font(
-                str(title_font_path),
-                28
-            )
+        self.title_font = pygame.font.Font(
+            str(title_font_path),
+            28
         )
 
-        self.normal_font = (
-            pygame.font.Font(
-                str(text_font_path),
-                26
-            )
+        self.normal_font = pygame.font.Font(
+            str(text_font_path),
+            26
         )
 
-        self.code_font = (
-            pygame.font.Font(
-                str(text_font_path),
-                26
-            )
+        self.code_font = pygame.font.Font(
+            str(text_font_path),
+            26
         )
 
-        self.small_font = (
-            pygame.font.Font(
-                str(text_font_path),
-                22
-            )
+        self.small_font = pygame.font.Font(
+            str(text_font_path),
+            22
         )
 
         self.player.max_health = 100
@@ -133,25 +96,19 @@ class BattleScene:
         self.boss.attack_damage = 10
 
         self.challenge_index = 0
-
-        self.current_challenge = (
-            CHALLENGES[0]
-        )
+        self.current_challenge = CHALLENGES[0]
 
         self.answer = ""
         self.state = "answering"
 
         self.message = ""
-
         self.message_color = (
             255,
             255,
             255
         )
 
-        self.start_time = (
-            pygame.time.get_ticks()
-        )
+        self.start_time = pygame.time.get_ticks()
 
         self.feedback_start = 0
         self.feedback_duration = 1200
@@ -159,19 +116,14 @@ class BattleScene:
 
         pygame.key.start_text_input()
 
-    def handle_event(
-        self,
-        event
-    ):
+    def handle_event(self, event):
         if self.state == "victory":
             return
 
         if self.state == "defeat":
             if (
-                event.type
-                == pygame.KEYDOWN
-                and event.key
-                == pygame.K_r
+                event.type == pygame.KEYDOWN
+                and event.key == pygame.K_r
             ):
                 self.reset_battle()
 
@@ -356,10 +308,7 @@ class BattleScene:
         )
 
         self.challenge_index = 0
-
-        self.current_challenge = (
-            CHALLENGES[0]
-        )
+        self.current_challenge = CHALLENGES[0]
 
         self.answer = ""
         self.message = ""
@@ -379,9 +328,7 @@ class BattleScene:
         ) / 1000
 
         time_limit = (
-            self.current_challenge[
-                "time"
-            ]
+            self.current_challenge["time"]
         )
 
         return max(
@@ -437,7 +384,7 @@ class BattleScene:
         )
 
         boss_y = (
-            int(height * 0.60)
+            int(height * 0.68)
             - self.boss_image.get_height()
         )
 
@@ -457,24 +404,48 @@ class BattleScene:
             )
         )
 
-        self.draw_health_bar(
-            screen,
-            int(width * 0.05),
-            55,
-            int(width * 0.30),
-            self.boss.health,
-            self.boss.max_health,
-            self.boss_name
+        bar_width = 160
+
+        player_bar_x = (
+            player_x
+            + self.player_image.get_width() // 2
+            - bar_width // 2
+        )
+
+        boss_bar_x = (
+            boss_x
+            + self.boss_image.get_width() // 2
+            - bar_width // 2
+        )
+
+        player_bar_y = max(
+            45,
+            player_y - 48
+        )
+
+        boss_bar_y = max(
+            45,
+            boss_y - 48
         )
 
         self.draw_health_bar(
             screen,
-            int(width * 0.62),
-            int(height * 0.45),
-            int(width * 0.30),
+            player_bar_x,
+            player_bar_y,
+            bar_width,
             self.player.health,
             self.player.max_health,
             "Player"
+        )
+
+        self.draw_health_bar(
+            screen,
+            boss_bar_x,
+            boss_bar_y,
+            bar_width,
+            self.boss.health,
+            self.boss.max_health,
+            self.boss_name
         )
 
         panel = pygame.Rect(
@@ -557,15 +528,13 @@ class BattleScene:
             3
         )
 
-        answer_text = (
-            self.code_font.render(
-                self.answer.replace(
-                    "\n",
-                    " ↵ "
-                ),
-                True,
-                (20, 20, 25)
-            )
+        answer_text = self.code_font.render(
+            self.answer.replace(
+                "\n",
+                " ↵ "
+            ),
+            True,
+            (20, 20, 25)
         )
 
         old_clip = screen.get_clip()
@@ -649,9 +618,18 @@ class BattleScene:
             )
         )
 
+        label_x = (
+            x
+            + bar_width // 2
+            - label_surface.get_width() // 2
+        )
+
         screen.blit(
             label_surface,
-            (x, y)
+            (
+                label_x,
+                y
+            )
         )
 
         bar_y = y + 23
@@ -721,8 +699,7 @@ class BattleScene:
                 line_surface,
                 (
                     x,
-                    y
-                    + line_number * 24
+                    y + line_number * 24
                 )
             )
 
