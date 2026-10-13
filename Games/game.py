@@ -4,6 +4,7 @@ import pygame
 
 from battle_scene import BattleScene
 from enemy import Enemy
+from levels import LEVELS
 from player import Player
 from tilemap import TileMap
 from transition_scene import BattleTransition
@@ -13,42 +14,27 @@ from map_scene import MapScene
 pygame.init()
 
 GAME_FOLDER = Path(__file__).parent
-
-GAME_SIZE = (800, 450)
-FULLSCREEN_SIZE = (1920, 1080)
-
-windowed_size = GAME_SIZE
-fullscreen = False
+SCREEN_SIZE = (800, 448)
 
 clock = pygame.time.Clock()
 
 screen = pygame.display.set_mode(
-    windowed_size,
-    pygame.RESIZABLE
+    SCREEN_SIZE
 )
 
-game_surface = pygame.Surface(GAME_SIZE)
+pygame.display.set_caption("MIGUEL")
 
-pygame.display.set_caption("Miguel")
 
-background_path = (
-    GAME_FOLDER
-    / "assets"
-    / "backgrounds"
-    / "bg1.png"
-)
+def load_background(filename):
+    """Load one background image and scale it to the screen."""
+    path = GAME_FOLDER / "assets" / "backgrounds" / filename
 
-background = pygame.image.load(
-    str(background_path)
-).convert()
+    image = pygame.image.load(str(path)).convert()
 
-background = pygame.transform.scale(
-    background,
-    GAME_SIZE
-)
+    return pygame.transform.scale(image, SCREEN_SIZE)
 
-tile_map = TileMap()
 
+# The player is created once, so the same character is used in every level
 man = Player(
     80,
     200,
@@ -56,29 +42,35 @@ man = Player(
     80
 )
 
-goblin = Enemy(
-    560,
-    250,
-    64,
-    64,
-    720
-)
 
-battle = BattleScene(
-    man,
-    goblin
-)
+def load_level(index):
+    """Build everything that changes from level to level."""
+    data = LEVELS[index]
 
-map_scene = MapScene(
-    man,
-    goblin,
-    tile_map,
-    background
-)
+    # Put the player back at this level's starting spot
+    man.x, man.y = data["player_start"]
+    man.velocity_y = 0
+
+    background = load_background(data["background"])
+    tile_map = TileMap(data["layout"], data["tiles"])
+    enemy = Enemy(**data["enemy"])
+
+    battle = BattleScene(man, enemy)
+    map_scene = MapScene(man, enemy, tile_map, background)
+
+    return battle, map_scene
+
+
+current_level = 0
+battle, map_scene = load_level(current_level)
 
 transition = BattleTransition()
 
+# What the running transition is for: "battle", "map" or "next_level"
+transition_target = "battle"
+
 current_scene = "map"
+fullscreen = False
 running = True
 
 while running:
@@ -88,40 +80,28 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-        elif (
-            event.type == pygame.VIDEORESIZE
-            and not fullscreen
-        ):
-            windowed_size = (
-                max(400, event.w),
-                max(225, event.h)
-            )
-
-            screen = pygame.display.set_mode(
-                windowed_size,
-                pygame.RESIZABLE
-            )
-
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 running = False
 
-            elif event.key == pygame.K_m:
-                pygame.display.iconify()
-
-            elif event.key == pygame.K_f:
+            elif (
+                event.key == pygame.K_f
+                and current_scene == "map"
+            ):
                 fullscreen = not fullscreen
 
                 if fullscreen:
-                    screen = pygame.display.set_mode(
-                        FULLSCREEN_SIZE,
+                    flags = (
                         pygame.FULLSCREEN
+                        | pygame.SCALED
                     )
                 else:
-                    screen = pygame.display.set_mode(
-                        windowed_size,
-                        pygame.RESIZABLE
-                    )
+                    flags = 0
+
+                screen = pygame.display.set_mode(
+                    SCREEN_SIZE,
+                    flags
+                )
 
             elif (
                 event.key == pygame.K_SPACE
@@ -135,59 +115,48 @@ while running:
 
     if current_scene == "map":
         if not transition.active:
-            touched_enemy = map_scene.update(
-                pygame.key.get_pressed()
-            )
+            result = map_scene.update(pygame.key.get_pressed())
 
-            if touched_enemy:
+            # Touched the enemy: go to the battle
+            if result == "enemy":
+                transition_target = "battle"
                 transition.start()
 
-        map_scene.draw(game_surface)
+            # Enemy defeated and player reached the edge: next level
+            elif result == "exit" and current_level + 1 < len(LEVELS):
+                transition_target = "next_level"
+                transition.start()
+
+        map_scene.draw(screen)
 
     elif current_scene == "battle":
         battle.update()
-        battle.draw(game_surface)
+        battle.draw(screen)
+
+        # After the victory message, go back to the map
+        if (
+            battle.state == "victory"
+            and battle.victory_delay_done()
+            and not transition.active
+        ):
+            battle.boss.defeated = True
+            transition_target = "map"
+            transition.start()
 
     if transition.active:
         if transition.update():
-            current_scene = "battle"
+            # The screen is fully black right now, so it's safe to swap
+            if transition_target == "battle":
+                current_scene = "battle"
 
-        transition.draw(game_surface)
+            elif transition_target == "map":
+                current_scene = "map"
 
-    display_width, display_height = (
-        screen.get_size()
-    )
+            elif transition_target == "next_level":
+                current_level += 1
+                battle, map_scene = load_level(current_level)
 
-    scale = min(
-        display_width / GAME_SIZE[0],
-        display_height / GAME_SIZE[1]
-    )
-
-    scaled_size = (
-        int(GAME_SIZE[0] * scale),
-        int(GAME_SIZE[1] * scale)
-    )
-
-    scaled_game = pygame.transform.scale(
-        game_surface,
-        scaled_size
-    )
-
-    screen.fill((0, 0, 0))
-
-    screen.blit(
-        scaled_game,
-        (
-            (
-                display_width
-                - scaled_size[0]
-            ) // 2,
-            (
-                display_height
-                - scaled_size[1]
-            ) // 2
-        )
-    )
+        transition.draw(screen)
 
     pygame.display.flip()
 

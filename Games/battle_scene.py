@@ -110,14 +110,21 @@ class BattleScene:
         self.feedback_start = 0
         self.feedback_duration = 1200
 
+        # When the victory screen started (used for the short pause)
+        self.end_start = 0
+
+    # EVENT HANDLING
+
     def handle_event(self, event):
         if event.type != pygame.KEYDOWN:
             return
 
-        if self.state in (
-            "victory",
-            "defeat"
-        ):
+        # After a victory, the game moves on by itself
+        if self.state == "victory":
+            return
+
+        # Restart the battle after losing
+        if self.state == "defeat":
             if event.key == pygame.K_r:
                 self.reset_battle()
 
@@ -179,6 +186,7 @@ class BattleScene:
             if elapsed >= self.feedback_duration:
                 if self.boss.health <= 0:
                     self.state = "victory"
+                    self.end_start = pygame.time.get_ticks()
 
                 elif self.player.health <= 0:
                     self.state = "defeat"
@@ -287,11 +295,15 @@ class BattleScene:
             - self.start_time
         ) / 1000
 
-        return max(
-            0,
-            self.current_challenge["time"]
-            - elapsed
-        )
+        time_limit = self.current_challenge["time"]
+
+        return max(0, time_limit - elapsed)
+
+    def victory_delay_done(self, delay=1500):
+        """True once the victory message has been shown long enough."""
+        return pygame.time.get_ticks() - self.end_start >= delay
+
+    # DRAWING
 
     def draw(self, screen):
         width = screen.get_width()
@@ -629,14 +641,6 @@ class BattleScene:
             color
         )
 
-        restart_text = (
-            self.normal_font.render(
-                "Press R to battle again",
-                True,
-                (255, 255, 255)
-            )
-        )
-
         screen.blit(
             end_text,
             (
@@ -646,12 +650,20 @@ class BattleScene:
             )
         )
 
-        screen.blit(
-            restart_text,
-            (
-                panel.centerx
-                - restart_text.get_width()
-                // 2,
-                panel.y + 82
+        # Only offer a restart after a defeat
+        if self.state == "defeat":
+            restart_text = self.normal_font.render(
+                "Press R to battle again",
+                True,
+                (255, 255, 255)
             )
-        )
+
+            screen.blit(
+                restart_text,
+                (
+                    panel.centerx
+                    - restart_text.get_width() // 2,
+
+                    panel.y + 85
+                )
+            )
