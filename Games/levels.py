@@ -51,7 +51,7 @@ LEVELS = [
             "sprite_set": "granny",
         },
         "boss": {
-            "name": "Dj",
+            "name": "Lorna",
             "battle_sprite": "boss/LornaBS.png",
             "battle_size": (110, 170),
             "battle_background": "MiguelBattleBG.png",
@@ -75,7 +75,7 @@ LEVELS = [
             "sprite_set": "goblin",
         },
         "boss": {
-            "name": "Dean",
+            "name": "Miguel",
             "battle_sprite": "boss/MiguelBS.png",
             "battle_size": (110, 165),
             "battle_background": "MiguelBattleBG.png",
