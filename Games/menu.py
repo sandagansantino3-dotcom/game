@@ -33,6 +33,14 @@ class Audio:
 
     def __init__(self):
         self.set(load(SETTINGS, "volume", 0.7))
+        songs = sorted((HERE / "assets" / "music").glob("*.mp3"))
+        if songs:
+            try:
+                pygame.mixer.music.load(str(songs[0]))
+                pygame.mixer.music.play(-1)
+                self.set(self.volume)
+            except pygame.error:
+                pass
 
     def set(self, value):
         self.volume = max(0.0, min(1.0, float(value)))
@@ -119,7 +127,7 @@ def settings(screen, audio, backdrop):
 
 
 def run_menu(screen, audio, title, items, backdrop, disabled=(), selected=0, escape="Quit"):
-    
+  
     clock, dim = pygame.time.Clock(), dimmer()
     big, small = font("Silkscreen-Regular.ttf", 54), font("VT323-Regular.ttf", 34)
     rects = [pygame.Rect((W - 300) // 2, 168 + i * 58, 300, 46) for i in range(len(items))]
@@ -190,9 +198,8 @@ def main_menu(screen, audio, level_count):
         return min(level, level_count - 1)
     return None
 
-
 def pause_menu(screen, audio):
-    
+   
     snapshot = screen.copy()
     choice = run_menu(
         screen, audio, "PAUSED", ["Resume", "Settings", "Main Menu", "Quit"],
