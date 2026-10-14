@@ -199,3 +199,4 @@ def pause_menu(screen, audio):
         lambda s: s.blit(snapshot, (0, 0)), escape="Resume",
     )
     return choice.lower().replace(" ", "_")
+
