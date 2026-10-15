@@ -1,5 +1,6 @@
 from pathlib import Path
 from functools import lru_cache
+import math
 import pygame
 
 from challenges import (
@@ -20,6 +21,16 @@ def cached_image(path, size, alpha):
     image = pygame.image.load(path)
     image = image.convert_alpha() if alpha else image.convert()
     return pygame.transform.scale(image, size)
+
+
+def make_white_flash(image):
+    """Create a white version of a sprite while preserving its alpha."""
+    flash = image.copy()
+    flash.fill(
+        (255, 255, 255),
+        special_flags=pygame.BLEND_RGB_ADD
+    )
+    return flash
 
 
 class BattleScene:
@@ -71,6 +82,16 @@ class BattleScene:
             tuple(boss_data["battle_size"]),
             True
         )
+
+        self.player_flash_image = make_white_flash(
+            self.player_image
+        )
+        self.boss_flash_image = make_white_flash(
+            self.boss_image
+        )
+        self.hit_effect_duration = 480
+        self.player_hit_started = None
+        self.boss_hit_started = None
 
         title_font_path = (
             assets
@@ -193,10 +214,8 @@ class BattleScene:
             self.state == "answering"
             and self.get_time_left() <= 0
         ):
-            self.player.health = max(
-                0,
-                self.player.health
-                - self.boss.attack_damage
+            self._damage_player(
+                self.boss.attack_damage
             )
 
             self.message = (
@@ -253,10 +272,7 @@ class BattleScene:
                 ]
             )
 
-            self.boss.health = max(
-                0,
-                self.boss.health - damage
-            )
+            self._damage_boss(damage)
 
             self.message = (
                 f"Correct! "
@@ -271,10 +287,8 @@ class BattleScene:
             )
 
         else:
-            self.player.health = max(
-                0,
-                self.player.health
-                - self.boss.attack_damage
+            self._damage_player(
+                self.boss.attack_damage
             )
 
             self.message = (
@@ -289,6 +303,52 @@ class BattleScene:
             )
 
         self.begin_feedback()
+
+    def _damage_player(self, amount):
+        self.player.health = max(
+            0,
+            self.player.health - amount
+        )
+        self.player_hit_started = pygame.time.get_ticks()
+
+    def _damage_boss(self, amount):
+        self.boss.health = max(
+            0,
+            self.boss.health - amount
+        )
+        self.boss_hit_started = pygame.time.get_ticks()
+
+    def _hit_sprite(self, image, flash_image, hit_started, now):
+        """Return the current sprite and a brief shake offset for a hit."""
+        if hit_started is None:
+            return image, (0, 0)
+
+        elapsed = now - hit_started
+        if elapsed >= self.hit_effect_duration:
+            return image, (0, 0)
+
+        # Shake first, then blink white a few times before recovering.
+        shake_duration = 180
+        flash_duration = 300
+        offset_x = 0
+        offset_y = 0
+
+        if elapsed < shake_duration:
+            strength = 1 - elapsed / shake_duration
+            offset_x = round(
+                math.sin(elapsed * 0.10) * 9 * strength
+            )
+            offset_y = round(
+                math.sin(elapsed * 0.16) * 3 * strength
+            )
+
+        flash_on = (
+            shake_duration <= elapsed
+            < shake_duration + flash_duration
+            and (elapsed // 60) % 2 == 0
+        )
+
+        return (flash_image if flash_on else image), (offset_x, offset_y)
 
     def begin_feedback(self):
         self.state = "feedback"
@@ -311,6 +371,8 @@ class BattleScene:
         self.answer = ""
         self.message = ""
         self.state = "answering"
+        self.player_hit_started = None
+        self.boss_hit_started = None
 
         self.start_time = (
             pygame.time.get_ticks()
@@ -334,6 +396,8 @@ class BattleScene:
         self.answer = ""
         self.message = ""
         self.state = "answering"
+        self.player_hit_started = None
+        self.boss_hit_started = None
 
         self.start_time = (
             pygame.time.get_ticks()
@@ -816,19 +880,33 @@ class BattleScene:
             - self.boss_image.get_height()
         )
 
-        screen.blit(
+        now = pygame.time.get_ticks()
+        player_sprite, player_offset = self._hit_sprite(
             self.player_image,
+            self.player_flash_image,
+            self.player_hit_started,
+            now
+        )
+        boss_sprite, boss_offset = self._hit_sprite(
+            self.boss_image,
+            self.boss_flash_image,
+            self.boss_hit_started,
+            now
+        )
+
+        screen.blit(
+            player_sprite,
             (
-                player_x,
-                player_y
+                player_x + player_offset[0],
+                player_y + player_offset[1]
             )
         )
 
         screen.blit(
-            self.boss_image,
+            boss_sprite,
             (
-                boss_x,
-                boss_y
+                boss_x + boss_offset[0],
+                boss_y + boss_offset[1]
             )
         )
 
