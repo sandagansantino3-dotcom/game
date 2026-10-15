@@ -2,6 +2,7 @@ import sys
 from pathlib import Path
 import pygame
 
+import menu
 from battle_scene import BattleScene
 from enemy import Enemy
 from levels import LEVELS
@@ -23,6 +24,8 @@ screen = pygame.display.set_mode(
 )
 
 pygame.display.set_caption("MIGUEL")
+
+audio = menu.Audio()
 
 
 def load_background(folder_name):
@@ -81,6 +84,8 @@ def load_level(index):
         data["boss"]
     )
 
+    battle.player_name = player_name
+
     map_scene = MapScene(
         man,
         enemy,
@@ -91,7 +96,23 @@ def load_level(index):
     return battle, map_scene
 
 
-current_level = 0
+def show_main_menu():
+    result = menu.main_menu(
+        screen,
+        audio,
+        len(LEVELS)
+    )
+
+    if result is None:
+        pygame.quit()
+        sys.exit()
+
+    menu.save_level(*result)
+
+    return result
+
+
+current_level, player_name = show_main_menu()
 
 battle, map_scene = load_level(
     current_level
@@ -112,8 +133,43 @@ while running:
             running = False
 
         elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
-                running = False
+            if (
+                event.key == pygame.K_ESCAPE
+                and not transition.active
+            ):
+                paused_at = pygame.time.get_ticks()
+
+                choice = menu.pause_menu(
+                    screen,
+                    audio
+                )
+
+                paused_for = (
+                    pygame.time.get_ticks()
+                    - paused_at
+                )
+
+                if choice == "quit":
+                    running = False
+
+                elif choice == "main_menu":
+                    current_level, player_name = show_main_menu()
+
+                    battle, map_scene = load_level(
+                        current_level
+                    )
+
+                    transition = BattleTransition()
+                    transition_target = "battle"
+                    current_scene = "map"
+
+                else:
+                    # Resume: the battle timers use the clock,
+                    # so give back the time spent paused
+                    battle.start_time += paused_for
+                    battle.feedback_start += paused_for
+                    battle.end_start += paused_for
+                    transition.phase_start += paused_for
 
             elif (
                 event.key == pygame.K_f
@@ -169,6 +225,16 @@ while running:
 
         map_scene.draw(screen)
 
+        menu.draw_name(
+            screen,
+            player_name,
+            (
+                man.x - map_scene.camera_x
+                + man.width / 2,
+                man.y - 28
+            )
+        )
+
     elif current_scene == "battle":
         battle.update()
         battle.draw(screen)
@@ -195,6 +261,11 @@ while running:
                 == "next_level"
             ):
                 current_level += 1
+
+                menu.save_level(
+                    current_level,
+                    player_name
+                )
 
                 battle, map_scene = (
                     load_level(current_level)

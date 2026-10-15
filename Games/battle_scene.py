@@ -17,6 +17,7 @@ class BattleScene:
         self.player = player
         self.boss = boss
         self.boss_name = boss_data["name"]
+        self.player_name = "Player"
 
         self.challenges = (
             BOSS_CHALLENGES.get(
@@ -905,7 +906,7 @@ class BattleScene:
             bar_width,
             self.player.health,
             self.player.max_health,
-            "Player"
+            self.player_name
         )
 
         self.draw_health_bar(
