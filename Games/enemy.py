@@ -126,7 +126,7 @@ class Enemy:
         self.detection_range = 550
         self.chasing = False
 
-        # A* route state.
+        # Pathfinding A* route state.
         self._route = []
         self._path_timer = 0
         self._nav_source = None
@@ -146,7 +146,7 @@ class Enemy:
 
         self.walk_left = load_frames(
             sprite_set,
-            "L",
+            "L",    
             (width, height)
         )
 
