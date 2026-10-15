@@ -173,10 +173,11 @@ LEVELS = [
             "sprite_set": "khal",
         },
         "boss": {
-            "name": "Miguel",
-            "battle_sprite": "boss/MiguelBS.png",
-            "attack_sprite": "boss/attack_animations/miguel_attack.png",
-            "battle_size": (84, 165),
+            # Medium uses Lorna's existing art, with the new boss name Dj.
+            "name": "Dj",
+            "battle_sprite": "boss/LornaBS.png",
+            "attack_sprite": "boss/attack_animations/lorna_attack.png",
+            "battle_size": (110, 170),
             "battle_background": "MiguelBattleBG.png",
         },
     },
@@ -198,7 +199,8 @@ LEVELS = [
             "sprite_set": "jamis",
         },
         "boss": {
-            "name": "Prof. Jamis",
+            # Hard uses the existing Jamis art until a Masterbug sprite is added.
+            "name": "Masterbug",
             "battle_sprite": "boss/JamisBS.png",
             "attack_sprite": "boss/attack_animations/jamis_attack.png",
             "battle_size": (96, 170),

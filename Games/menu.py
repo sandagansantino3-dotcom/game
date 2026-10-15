@@ -252,13 +252,13 @@ def difficulty_menu(screen, backdrop):
         {
             "name": "MEDIUM",
             "status": "LOCKED",
-            "detail": "Not available yet",
+            "detail": "Boss: Dj",
             "enabled": False,
         },
         {
             "name": "HARD",
             "status": "LOCKED",
-            "detail": "Not available yet",
+            "detail": "Boss: Masterbug",
             "enabled": False,
         },
     ]
