@@ -114,9 +114,96 @@ MIGUEL_CHALLENGES = [
 ]
 
 
+JAMIS_CHALLENGES = [
+    {
+        "broken": (
+            'class Player\n'
+            '    pass'
+        ),
+        "answer": (
+            'class Player:\n'
+            '    pass'
+        ),
+        "time": 45,
+        "damage": 25,
+    },
+    {
+        "broken": (
+            'def square(n):\n'
+            '    return n ** 2\n'
+            'print(square 4)'
+        ),
+        "answer": (
+            'def square(n):\n'
+            '    return n ** 2\n'
+            'print(square(4))'
+        ),
+        "time": 45,
+        "damage": 25,
+    },
+    {
+        "broken": (
+            "for i in range(3):\n"
+            "    if i == 1\n"
+            "        print(i)"
+        ),
+        "answer": (
+            "for i in range(3):\n"
+            "    if i == 1:\n"
+            "        print(i)"
+        ),
+        "time": 45,
+        "damage": 25,
+    },
+    {
+        "broken": (
+            "items = [1, 2, 3]\n"
+            "total = sum(items\n"
+            "print(total)"
+        ),
+        "answer": (
+            "items = [1, 2, 3]\n"
+            "total = sum(items)\n"
+            "print(total)"
+        ),
+        "time": 45,
+        "damage": 25,
+    },
+    {
+        "broken": (
+            "try:\n"
+            "    x = int(input())\n"
+            "except ValueError\n"
+            "    x = 0"
+        ),
+        "answer": (
+            "try:\n"
+            "    x = int(input())\n"
+            "except ValueError:\n"
+            "    x = 0"
+        ),
+        "time": 45,
+        "damage": 25,
+    },
+    {
+        "broken": (
+            "import random\n"
+            "n = random.randint(1 10)"
+        ),
+        "answer": (
+            "import random\n"
+            "n = random.randint(1, 10)"
+        ),
+        "time": 45,
+        "damage": 25,
+    },
+]
+
+
 BOSS_CHALLENGES = {
     "Lorna": LORNA_CHALLENGES,
     "Miguel": MIGUEL_CHALLENGES,
+    "Prof. Jamis": JAMIS_CHALLENGES,
 }
 
 DEFAULT_CHALLENGES = (

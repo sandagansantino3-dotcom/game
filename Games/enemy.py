@@ -18,6 +18,14 @@ SPRITE_SETS = {
         "suffix": "G",
         "count": 4
     },
+    # Prof. Jamis: only right-facing frames R1J..R6J.png are needed,
+    # the left-facing frames are made by flipping them.
+    "jamis": {
+        "folder": "enemy",
+        "suffix": "J",
+        "count": 5,
+        "mirror": True
+    },
 }
 
 
@@ -37,6 +45,13 @@ def load_frames(
 
     frames = []
 
+    mirror = (
+        info.get("mirror", False)
+        and side == "L"
+    )
+
+    file_side = "R" if mirror else side
+
     for i in range(
         1,
         info["count"] + 1
@@ -44,7 +59,7 @@ def load_frames(
         exact = (
             folder
             / (
-                f"{side}{i}"
+                f"{file_side}{i}"
                 f"{info['suffix']}.png"
             )
         )
@@ -55,7 +70,7 @@ def load_frames(
         else:
             matches = sorted(
                 folder.glob(
-                    f"{side}{i}"
+                    f"{file_side}{i}"
                     f"{info['suffix']}*"
                 )
             )
@@ -70,6 +85,13 @@ def load_frames(
         image = pygame.image.load(
             str(path)
         )
+
+        if mirror:
+            image = pygame.transform.flip(
+                image,
+                True,
+                False
+            )
 
         frames.append(
             pygame.transform.scale(
