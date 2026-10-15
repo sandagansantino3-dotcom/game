@@ -216,6 +216,139 @@ def ask_name(screen, backdrop, name=""):
         clock.tick(60)
 
 
+def difficulty_menu(screen, backdrop):
+    """Show the difficulty selection screen. Easy is currently available."""
+    clock = pygame.time.Clock()
+    dim = dimmer()
+    title_font = font("Silkscreen-Regular.ttf", 38)
+    option_font = font("VT323-Regular.ttf", 34)
+    detail_font = font("VT323-Regular.ttf", 24)
+    options = [
+        {
+            "name": "EASY",
+            "status": "AVAILABLE",
+            "detail": "Standard challenge",
+            "enabled": True,
+        },
+        {
+            "name": "MEDIUM",
+            "status": "LOCKED",
+            "detail": "Not available yet",
+            "enabled": False,
+        },
+        {
+            "name": "HARD",
+            "status": "LOCKED",
+            "detail": "Not available yet",
+            "enabled": False,
+        },
+    ]
+    cards = [
+        pygame.Rect(42 + index * 244, 164, 220, 174)
+        for index in range(len(options))
+    ]
+    back_rect = pygame.Rect(250, 370, 300, 46)
+
+    while True:
+        mouse_position = pygame.mouse.get_pos()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.event.post(event)
+                return None
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    return None
+                if event.key in (pygame.K_RETURN, pygame.K_SPACE):
+                    return "easy"
+
+            if (
+                event.type == pygame.MOUSEBUTTONDOWN
+                and event.button == 1
+            ):
+                if back_rect.collidepoint(event.pos):
+                    return None
+                if cards[0].collidepoint(event.pos):
+                    return "easy"
+
+        backdrop(screen)
+        screen.blit(dim, (0, 0))
+
+        title_surface = title_font.render(
+            "SELECT DIFFICULTY",
+            True,
+            LIGHT
+        )
+        screen.blit(
+            title_surface,
+            title_surface.get_rect(center=(W // 2, 92))
+        )
+
+        for index, (card, option) in enumerate(zip(cards, options)):
+            enabled = option["enabled"]
+            hovered = enabled and card.collidepoint(mouse_position)
+
+            fill = SELECT if hovered else PANEL
+            border = (35, 95, 145) if hovered else BORDER
+            label_color = DARK if enabled else (110, 116, 104)
+            detail_color = (35, 76, 120) if enabled else (110, 116, 104)
+
+            pygame.draw.rect(
+                screen,
+                fill,
+                card,
+                border_radius=10
+            )
+            pygame.draw.rect(
+                screen,
+                border,
+                card,
+                4,
+                border_radius=10
+            )
+
+            text(
+                screen,
+                option_font,
+                option["name"],
+                label_color,
+                (card.centerx, card.y + 46)
+            )
+            text(
+                screen,
+                detail_font,
+                option["status"],
+                detail_color,
+                (card.centerx, card.y + 94)
+            )
+            text(
+                screen,
+                detail_font,
+                option["detail"],
+                detail_color,
+                (card.centerx, card.y + 128)
+            )
+
+        button(
+            screen,
+            option_font,
+            back_rect,
+            "Back",
+            selected=back_rect.collidepoint(mouse_position)
+        )
+        text(
+            screen,
+            detail_font,
+            "Choose Easy to start",
+            LIGHT,
+            (W // 2, 432)
+        )
+
+        pygame.display.flip()
+        clock.tick(60)
+
+
 def main_menu(screen, audio, level_count):
     """Returns (level, name) to start with, or None if the player quit."""
     try:
@@ -244,7 +377,9 @@ def main_menu(screen, audio, level_count):
         if choice == "New Game":
             name = ask_name(screen, backdrop, name)
             if name:
-                return 0, name
+                difficulty = difficulty_menu(screen, backdrop)
+                if difficulty == "easy":
+                    return 0, name
         elif choice == "Continue":
             return min(level, level_count - 1), name
         else:
