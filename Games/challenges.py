@@ -77,11 +77,11 @@ MIGUEL_CHALLENGES = [
     },
     {
         "broken": (
-            'player = {"name": "Rene", '
+            'player = {"name": "TripleT", '
             '"score" 10}'
         ),
         "answer": (
-            'player = {"name": "Rene", '
+            'player = {"name": "TripleT", '
             '"score": 10}'
         ),
         "time": 35,
