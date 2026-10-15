@@ -148,7 +148,7 @@ LEVELS = [
             "sprite_set": "granny",
         },
         "boss": {
-            "name": "Lorna",
+            "name": "Dj",
             "battle_sprite": "boss/LornaBS.png",
             "attack_sprite": "boss/attack_animations/lorna_attack.png",
             "battle_size": (110, 170),
@@ -174,9 +174,9 @@ LEVELS = [
         },
         "boss": {
             # Medium uses Lorna's existing art, with the new boss name Dj.
-            "name": "Dj",
-            "battle_sprite": "boss/LornaBS.png",
-            "attack_sprite": "boss/attack_animations/lorna_attack.png",
+            "name": "Miguel",
+            "battle_sprite": "boss/MiguelBS.png",
+            "attack_sprite": "boss/attack_animations/miguel_attack.png",
             "battle_size": (110, 170),
             "battle_background": "MiguelBattleBG.png",
         },
