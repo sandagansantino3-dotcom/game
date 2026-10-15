@@ -8,32 +8,21 @@ PLAYER_ASSETS = (
     / "player"
 )
 
+def load_image(name):
+    return pygame.image.load(
+        str(PLAYER_ASSETS / name)
+    )
+
+
+# Gamer Man sprites (all face right; left-facing is made by flipping)
 walk_right_images = [
-    pygame.image.load(
-        str(
-            PLAYER_ASSETS
-            / f"R{i}.png"
-        )
-    )
-    for i in range(8)
+    load_image(f"gm_walk{i}.png")
+    for i in range(1, 5)
 ]
 
-walk_left_images = [
-    pygame.image.load(
-        str(
-            PLAYER_ASSETS
-            / f"L{i}.png"
-        )
-    )
-    for i in range(1, 9)
-]
-
-standing_image = pygame.image.load(
-    str(
-        PLAYER_ASSETS
-        / "standing.png"
-    )
-)
+standing_image = load_image("gm_stand.png")
+jump_up_image = load_image("gm_jump_up.png")
+jump_down_image = load_image("gm_jump_down.png")
 
 
 class Player:
@@ -63,6 +52,8 @@ class Player:
         self.max_health = 100
         self.health = self.max_health
 
+        self.facing = 1
+
         self.walk_right = [
             pygame.transform.scale(
                 image,
@@ -72,11 +63,12 @@ class Player:
         ]
 
         self.walk_left = [
-            pygame.transform.scale(
+            pygame.transform.flip(
                 image,
-                (width, height)
+                True,
+                False
             )
-            for image in walk_left_images
+            for image in self.walk_right
         ]
 
         self.standing = (
@@ -84,6 +76,32 @@ class Player:
                 standing_image,
                 (width, height)
             )
+        )
+
+        self.jump_up_right = (
+            pygame.transform.scale(
+                jump_up_image,
+                (width, height)
+            )
+        )
+
+        self.jump_down_right = (
+            pygame.transform.scale(
+                jump_down_image,
+                (width, height)
+            )
+        )
+
+        self.jump_up_left = pygame.transform.flip(
+            self.jump_up_right,
+            True,
+            False
+        )
+
+        self.jump_down_left = pygame.transform.flip(
+            self.jump_down_right,
+            True,
+            False
         )
 
     @property
@@ -133,11 +151,13 @@ class Player:
             dx = -self.speed
             self.left = True
             self.right = False
+            self.facing = -1
 
         elif keys[pygame.K_RIGHT]:
             dx = self.speed
             self.right = True
             self.left = False
+            self.facing = 1
 
         else:
             self.left = False
@@ -201,9 +221,21 @@ class Player:
         window,
         camera_x=0
     ):
-        frames_per_image = 3
+        frames_per_image = 6
 
-        if self.left or self.right:
+        if not self.on_ground:
+            if self.velocity_y < 0:
+                if self.facing < 0:
+                    image = self.jump_up_left
+                else:
+                    image = self.jump_up_right
+            else:
+                if self.facing < 0:
+                    image = self.jump_down_left
+                else:
+                    image = self.jump_down_right
+
+        elif self.left or self.right:
             if self.left:
                 frames = self.walk_left
             else:

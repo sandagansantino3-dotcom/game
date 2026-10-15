@@ -8,15 +8,18 @@ ASSETS = (
 )
 
 SPRITE_SETS = {
-    "goblin": {
-        "folder": "enemy",
-        "suffix": "E",
-        "count": 11
-    },
     "granny": {
         "folder": "enemy",
         "suffix": "G",
         "count": 4
+    },
+    # Khal El: only right-facing frames R1K..R4K.png are needed,
+    # the left-facing frames are made by flipping them.
+    "khal": {
+        "folder": "enemy",
+        "suffix": "K",
+        "count": 4,
+        "mirror": True
     },
     # Prof. Jamis: only right-facing frames R1J..R6J.png are needed,
     # the left-facing frames are made by flipping them.
@@ -111,7 +114,7 @@ class Enemy:
         width,
         height,
         end,
-        sprite_set="goblin"
+        sprite_set="khal"
     ):
         self.x = float(x)
         self.y = float(y)
