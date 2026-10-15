@@ -37,6 +37,7 @@ class Audio:
 
     def __init__(self):
         self.set(load(SETTINGS, "volume", 0.7))
+        self.fullscreen = load(SETTINGS, "fullscreen", False) is True
         songs = sorted((HERE / "assets" / "music").glob("*.mp3"))
         if songs:
             try:
@@ -54,7 +55,11 @@ class Audio:
             pass
 
     def save(self):
-        save(SETTINGS, volume=round(self.volume, 2))
+        save(
+            SETTINGS,
+            volume=round(self.volume, 2),
+            fullscreen=self.fullscreen,
+        )
 
 
 @lru_cache(maxsize=None)
@@ -84,10 +89,12 @@ def dimmer():
     return surface
 
 
-def settings(screen, audio, backdrop):
-    """Volume slider. Left/Right or drag with the mouse; Esc to go back."""
+def settings(screen, audio, backdrop, toggle_fullscreen=None):
+    """Adjust volume and toggle fullscreen; Esc to go back."""
     clock, dim, f = pygame.time.Clock(), dimmer(), font("VT323-Regular.ttf", 34)
-    track, back = pygame.Rect(220, 232, 360, 14), pygame.Rect(250, 318, 300, 46)
+    track = pygame.Rect(220, 220, 360, 14)
+    fullscreen_button = pygame.Rect(250, 267, 300, 42)
+    back = pygame.Rect(250, 322, 300, 42)
     dragging = done = False
 
     while not done:
@@ -101,9 +108,14 @@ def settings(screen, audio, backdrop):
                 elif event.key in (pygame.K_LEFT, pygame.K_RIGHT):
                     step = 1 if event.key == pygame.K_RIGHT else -1
                     audio.set(round(audio.volume * 20 + step) / 20)
+                elif event.key == pygame.K_f and toggle_fullscreen:
+                    screen = toggle_fullscreen() or screen
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 if track.inflate(24, 36).collidepoint(event.pos):
                     dragging = True
+                elif fullscreen_button.collidepoint(event.pos):
+                    if toggle_fullscreen:
+                        screen = toggle_fullscreen() or screen
                 elif back.collidepoint(event.pos):
                     done = True
             elif event.type == pygame.MOUSEBUTTONUP:
@@ -113,9 +125,9 @@ def settings(screen, audio, backdrop):
 
         backdrop(screen)
         screen.blit(dim, (0, 0))
-        pygame.draw.rect(screen, PANEL, (150, 140, 500, 240), border_radius=10)
-        pygame.draw.rect(screen, BORDER, (150, 140, 500, 240), 4, border_radius=10)
-        text(screen, f, f"Volume: {round(audio.volume * 100)}%", DARK, (W // 2, 190))
+        pygame.draw.rect(screen, PANEL, (150, 130, 500, 250), border_radius=10)
+        pygame.draw.rect(screen, BORDER, (150, 130, 500, 250), 4, border_radius=10)
+        text(screen, f, f"Volume: {round(audio.volume * 100)}%", DARK, (W // 2, 178))
         pygame.draw.rect(screen, (170, 40, 40), track)
         pygame.draw.rect(screen, (40, 190, 80), (*track.topleft, int(track.width * audio.volume), track.height))
         pygame.draw.rect(screen, (20, 20, 25), track, 3)
@@ -123,15 +135,22 @@ def settings(screen, audio, backdrop):
         handle.center = (track.x + int(track.width * audio.volume), track.centery)
         pygame.draw.rect(screen, SELECT, handle, border_radius=3)
         pygame.draw.rect(screen, (35, 95, 145), handle, 3, border_radius=3)
+        button(
+            screen,
+            f,
+            fullscreen_button,
+            f"Fullscreen: {'On' if audio.fullscreen else 'Off'}",
+        )
         button(screen, f, back, "Back", True)
-        text(screen, f, "Left/Right: volume    Esc: back", LIGHT, (W // 2, 424))
+        text(screen, f, "F: toggle fullscreen    Esc: back", LIGHT, (W // 2, 424))
         pygame.display.flip()
         clock.tick(60)
 
     audio.save()
+    return screen
 
 
-def run_menu(screen, audio, title, items, backdrop, disabled=(), selected=0, escape="Quit"):
+def run_menu(screen, audio, title, items, backdrop, disabled=(), selected=0, escape="Quit", toggle_fullscreen=None):
     """Shows a list of buttons and returns the name of the one chosen.
     "Settings" is handled here, so it is never returned."""
     clock, dim = pygame.time.Clock(), dimmer()
@@ -162,7 +181,7 @@ def run_menu(screen, audio, title, items, backdrop, disabled=(), selected=0, esc
                             choice = items[i]
 
             if choice == "Settings":
-                settings(screen, audio, backdrop)
+                screen = settings(screen, audio, backdrop, toggle_fullscreen)
             elif choice:
                 return choice
 
@@ -349,7 +368,7 @@ def difficulty_menu(screen, backdrop):
         clock.tick(60)
 
 
-def main_menu(screen, audio, level_count):
+def main_menu(screen, audio, level_count, toggle_fullscreen=None):
     """Returns (level, name) to start with, or None if the player quit."""
     try:
         from parallax import ParallaxBackground
@@ -373,6 +392,7 @@ def main_menu(screen, audio, level_count):
         choice = run_menu(
             screen, audio, "MIGUEL", ["New Game", "Continue", "Settings", "Quit"], backdrop,
             disabled=() if has_save else ("Continue",), selected=1 if has_save else 0,
+            toggle_fullscreen=toggle_fullscreen,
         )
         if choice == "New Game":
             name = ask_name(screen, backdrop, name)
@@ -386,11 +406,12 @@ def main_menu(screen, audio, level_count):
             return None
 
 
-def pause_menu(screen, audio):
+def pause_menu(screen, audio, toggle_fullscreen=None):
     """Returns "resume", "main_menu" or "quit"."""
     snapshot = screen.copy()
     choice = run_menu(
         screen, audio, "PAUSED", ["Resume", "Settings", "Main Menu", "Quit"],
         lambda s: s.blit(snapshot, (0, 0)), escape="Resume",
+        toggle_fullscreen=toggle_fullscreen,
     )
     return choice.lower().replace(" ", "_")

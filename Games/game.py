@@ -24,9 +24,31 @@ screen = pygame.display.set_mode(
     SCREEN_SIZE
 )
 
-pygame.display.set_caption("Realm of Syntax Errors")
+pygame.display.set_caption("MIGUEL")
 
 audio = menu.Audio()
+fullscreen = audio.fullscreen
+
+if fullscreen:
+    screen = pygame.display.set_mode(
+        SCREEN_SIZE,
+        pygame.FULLSCREEN | pygame.SCALED,
+    )
+
+
+def toggle_fullscreen():
+    global screen, fullscreen
+
+    fullscreen = not fullscreen
+    flags = (
+        pygame.FULLSCREEN | pygame.SCALED
+        if fullscreen
+        else 0
+    )
+    screen = pygame.display.set_mode(SCREEN_SIZE, flags)
+    audio.fullscreen = fullscreen
+    audio.save()
+    return screen
 
 
 @lru_cache(maxsize=8)
@@ -93,7 +115,8 @@ def show_main_menu():
     result = menu.main_menu(
         screen,
         audio,
-        len(LEVELS)
+        len(LEVELS),
+        toggle_fullscreen,
     )
 
     if result is None:
@@ -115,7 +138,6 @@ transition = BattleTransition()
 transition_target = "battle"
 
 current_scene = "map"
-fullscreen = False
 running = True
 
 while running:
@@ -134,7 +156,8 @@ while running:
 
                 choice = menu.pause_menu(
                     screen,
-                    audio
+                    audio,
+                    toggle_fullscreen,
                 )
 
                 paused_for = (
@@ -168,20 +191,7 @@ while running:
                 event.key == pygame.K_f
                 and current_scene == "map"
             ):
-                fullscreen = not fullscreen
-
-                if fullscreen:
-                    flags = (
-                        pygame.FULLSCREEN
-                        | pygame.SCALED
-                    )
-                else:
-                    flags = 0
-
-                screen = pygame.display.set_mode(
-                    SCREEN_SIZE,
-                    flags
-                )
+                toggle_fullscreen()
 
             elif (
                 event.key == pygame.K_SPACE
