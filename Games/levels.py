@@ -150,6 +150,7 @@ LEVELS = [
         "boss": {
             "name": "Lorna",
             "battle_sprite": "boss/LornaBS.png",
+            "attack_sprite": "boss/attack_animations/lorna_attack.png",
             "battle_size": (110, 170),
             "battle_background": "MiguelBattleBG.png",
         },
@@ -174,6 +175,7 @@ LEVELS = [
         "boss": {
             "name": "Miguel",
             "battle_sprite": "boss/MiguelBS.png",
+            "attack_sprite": "boss/attack_animations/miguel_attack.png",
             "battle_size": (84, 165),
             "battle_background": "MiguelBattleBG.png",
         },
@@ -198,6 +200,7 @@ LEVELS = [
         "boss": {
             "name": "Prof. Jamis",
             "battle_sprite": "boss/JamisBS.png",
+            "attack_sprite": "boss/attack_animations/jamis_attack.png",
             "battle_size": (96, 170),
             "battle_background": "MiguelBattleBG.png",
         },

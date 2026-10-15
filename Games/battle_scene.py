@@ -83,6 +83,17 @@ class BattleScene:
             True
         )
 
+        attack_sprite = boss_data.get("attack_sprite")
+        self.boss_attack_image = (
+            cached_image(
+                str(assets / attack_sprite),
+                tuple(boss_data["battle_size"]),
+                True
+            )
+            if attack_sprite
+            else self.boss_image
+        )
+
         self.player_flash_image = make_white_flash(
             self.player_image
         )
@@ -148,6 +159,14 @@ class BattleScene:
         self.feedback_duration = 1200
         self.end_start = 0
 
+        # Boss turn timing: approach, hold the attack pose, then retreat.
+        self.boss_attack_approach_ms = 300
+        self.boss_attack_pose_ms = 500
+        self.boss_attack_retreat_ms = 280
+        self.boss_attack_damage_at_ms = 550
+        self.boss_attack_started = None
+        self.boss_attack_damage_applied = False
+
         pygame.key.start_text_input()
 
     def handle_event(
@@ -210,17 +229,36 @@ class BattleScene:
                 self.check_answer()
 
     def update(self):
-        if (
+        now = pygame.time.get_ticks()
+
+        if self.state == "boss_attack":
+            elapsed = now - self.boss_attack_started
+
+            # Apply damage at the impact point, after the boss has reached
+            # the player and shown its attack pose.
+            if (
+                not self.boss_attack_damage_applied
+                and elapsed >= self.boss_attack_damage_at_ms
+            ):
+                self._damage_player(self.boss.attack_damage)
+                self.boss_attack_damage_applied = True
+
+            attack_duration = (
+                self.boss_attack_approach_ms
+                + self.boss_attack_pose_ms
+                + self.boss_attack_retreat_ms
+            )
+
+            if elapsed >= attack_duration:
+                self.begin_feedback()
+
+        elif (
             self.state == "answering"
             and self.get_time_left() <= 0
         ):
-            self._damage_player(
-                self.boss.attack_damage
-            )
-
             self.message = (
                 "Time is up! "
-                "You were damaged!"
+                f"{self.boss_name} is attacking!"
             )
 
             self.message_color = (
@@ -229,7 +267,7 @@ class BattleScene:
                 45
             )
 
-            self.begin_feedback()
+            self._start_boss_attack()
 
         elif self.state == "feedback":
             elapsed = (
@@ -287,13 +325,8 @@ class BattleScene:
             )
 
         else:
-            self._damage_player(
-                self.boss.attack_damage
-            )
-
             self.message = (
-                "Wrong! "
-                "You were damaged!"
+                f"Wrong! {self.boss_name} is attacking!"
             )
 
             self.message_color = (
@@ -302,7 +335,16 @@ class BattleScene:
                 45
             )
 
+            self._start_boss_attack()
+            return
+
         self.begin_feedback()
+
+    def _start_boss_attack(self):
+        """Start the boss's turn after a wrong answer or timeout."""
+        self.state = "boss_attack"
+        self.boss_attack_started = pygame.time.get_ticks()
+        self.boss_attack_damage_applied = False
 
     def _damage_player(self, amount):
         self.player.health = max(
@@ -371,6 +413,8 @@ class BattleScene:
         self.answer = ""
         self.message = ""
         self.state = "answering"
+        self.boss_attack_started = None
+        self.boss_attack_damage_applied = False
         self.player_hit_started = None
         self.boss_hit_started = None
 
@@ -396,6 +440,8 @@ class BattleScene:
         self.answer = ""
         self.message = ""
         self.state = "answering"
+        self.boss_attack_started = None
+        self.boss_attack_damage_applied = False
         self.player_hit_started = None
         self.boss_hit_started = None
 
@@ -894,6 +940,60 @@ class BattleScene:
             now
         )
 
+        boss_visual_x = boss_x + boss_offset[0]
+
+        if (
+            self.state == "boss_attack"
+            and self.boss_attack_started is not None
+        ):
+            attack_elapsed = now - self.boss_attack_started
+            target_x = (
+                player_x
+                + self.player_image.get_width()
+                + 12
+            )
+            target_offset = target_x - boss_x
+            approach_end = self.boss_attack_approach_ms
+            pose_end = (
+                approach_end
+                + self.boss_attack_pose_ms
+            )
+
+            if attack_elapsed < approach_end:
+                progress = max(
+                    0.0,
+                    attack_elapsed / approach_end
+                )
+                eased = progress * progress * (3 - 2 * progress)
+                boss_visual_x = round(
+                    boss_x + target_offset * eased
+                )
+
+            elif attack_elapsed < pose_end:
+                # Each supplied attack PNG is a single pose, so hold it
+                # briefly at the impact position while player damage lands.
+                pose_elapsed = attack_elapsed - approach_end
+                boss_visual_x = (
+                    target_x
+                    + round(math.sin(pose_elapsed * 0.045) * 2)
+                )
+                boss_sprite = self.boss_attack_image
+
+            else:
+                retreat_duration = max(
+                    1,
+                    self.boss_attack_retreat_ms
+                )
+                progress = min(
+                    1.0,
+                    (attack_elapsed - pose_end)
+                    / retreat_duration
+                )
+                eased = progress * progress * (3 - 2 * progress)
+                boss_visual_x = round(
+                    target_x + (boss_x - target_x) * eased
+                )
+
         screen.blit(
             player_sprite,
             (
@@ -905,7 +1005,7 @@ class BattleScene:
         screen.blit(
             boss_sprite,
             (
-                boss_x + boss_offset[0],
+                boss_visual_x,
                 boss_y + boss_offset[1]
             )
         )
@@ -920,7 +1020,7 @@ class BattleScene:
         )
 
         boss_bar_x = (
-            boss_x
+            boss_visual_x
             + self.boss_image.get_width()
             // 2
             - bar_width // 2
