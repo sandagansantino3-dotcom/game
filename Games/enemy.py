@@ -1,4 +1,5 @@
 from pathlib import Path
+from functools import lru_cache
 import heapq
 import math
 import pygame
@@ -36,6 +37,7 @@ SPRITE_SETS = {
 }
 
 
+@lru_cache(maxsize=32)
 def load_frames(
     sprite_set,
     side,
@@ -127,6 +129,8 @@ class Enemy:
         # A* route state.
         self._route = []
         self._path_timer = 0
+        self._nav_source = None
+        self._nav_graph_cache = None
 
         self.max_health = 100
         self.health = self.max_health
@@ -259,6 +263,14 @@ class Enemy:
         Walking links connect neighboring positions on the same platform.
         Jump links are added only when a jump simulation can reach the target.
         """
+        # Tile geometry stays fixed during a level. Reuse the jump-tested
+        # graph instead of rebuilding it every time A* runs.
+        if (
+            solid_rects is self._nav_source
+            and self._nav_graph_cache is not None
+        ):
+            return self._nav_graph_cache
+
         nodes = set()
 
         for tile in solid_rects:
@@ -331,6 +343,8 @@ class Enemy:
                 ):
                     graph[node].append(target)
 
+        self._nav_source = solid_rects
+        self._nav_graph_cache = graph
         return graph
 
     def _a_star(self, start, goal, graph):

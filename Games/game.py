@@ -1,4 +1,5 @@
 import sys
+from functools import lru_cache
 from pathlib import Path
 import pygame
 
@@ -28,6 +29,7 @@ pygame.display.set_caption("MIGUEL")
 audio = menu.Audio()
 
 
+@lru_cache(maxsize=8)
 def load_background(folder_name):
     path = (
         GAME_FOLDER
@@ -39,15 +41,6 @@ def load_background(folder_name):
     return ParallaxBackground(
         path,
         scale=2
-    )
-
-    image = pygame.image.load(
-        str(path)
-    ).convert()
-
-    return pygame.transform.scale(
-        image,
-        SCREEN_SIZE
     )
 
 

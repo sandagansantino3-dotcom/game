@@ -1,4 +1,5 @@
 from pathlib import Path
+from functools import lru_cache
 import pygame
 
 
@@ -9,6 +10,12 @@ TILE_FOLDER = (
     / "assets"
     / "tiles"
 )
+
+
+@lru_cache(maxsize=32)
+def load_tile_image(path):
+    """Load and convert each tile image once for reuse across levels."""
+    return pygame.image.load(str(path)).convert_alpha()
 
 LEVEL = [
     ".........................",
@@ -41,17 +48,11 @@ class TileMap:
         left, middle, right = tile_files
 
         self.images = {
-            "<": pygame.image.load(
-                str(TILE_FOLDER / left)
-            ).convert_alpha(),
+            "<": load_tile_image(TILE_FOLDER / left),
 
-            "#": pygame.image.load(
-                str(TILE_FOLDER / middle)
-            ).convert_alpha(),
+            "#": load_tile_image(TILE_FOLDER / middle),
 
-            ">": pygame.image.load(
-                str(TILE_FOLDER / right)
-            ).convert_alpha(),
+            ">": load_tile_image(TILE_FOLDER / right),
         }
 
         self.tiles = []

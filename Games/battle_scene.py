@@ -1,10 +1,25 @@
 from pathlib import Path
+from functools import lru_cache
 import pygame
 
 from challenges import (
     BOSS_CHALLENGES,
     DEFAULT_CHALLENGES
 )
+
+
+@lru_cache(maxsize=64)
+def cached_font(path, size):
+    """Avoid reopening the same font while the battle panel redraws."""
+    return pygame.font.Font(path, size)
+
+
+@lru_cache(maxsize=32)
+def cached_image(path, size, alpha):
+    """Cache loaded and scaled battle images between level changes."""
+    image = pygame.image.load(path)
+    image = image.convert_alpha() if alpha else image.convert()
+    return pygame.transform.scale(image, size)
 
 
 class BattleScene:
@@ -39,52 +54,22 @@ class BattleScene:
             ]
         )
 
-        self.background = (
-            pygame.image.load(
-                str(background_path)
-            ).convert()
+        self.background = cached_image(
+            str(background_path),
+            (800, 450),
+            False
         )
 
-        self.background = (
-            pygame.transform.scale(
-                self.background,
-                (800, 450)
-            )
+        self.player_image = cached_image(
+            str(assets / "player" / "PlayerBS.png"),
+            (150, 150),
+            True
         )
 
-        self.player_image = (
-            pygame.image.load(
-                str(
-                    assets
-                    / "player"
-                    / "PlayerBS.png"
-                )
-            ).convert_alpha()
-        )
-
-        self.player_image = (
-            pygame.transform.scale(
-                self.player_image,
-                (150, 150)
-            )
-        )
-
-        self.boss_image = (
-            pygame.image.load(
-                str(
-                    assets
-                    / boss_data[
-                        "battle_sprite"
-                    ]
-                )
-            ).convert_alpha()
-        )
-
-        self.boss_image = (
-            pygame.transform.scale(
-                self.boss_image,
-                boss_data["battle_size"]
-            )
+        self.boss_image = cached_image(
+            str(assets / boss_data["battle_sprite"]),
+            tuple(boss_data["battle_size"]),
+            True
         )
 
         title_font_path = (
@@ -103,33 +88,13 @@ class BattleScene:
             text_font_path
         )
 
-        self.title_font = (
-            pygame.font.Font(
-                str(title_font_path),
-                28
-            )
-        )
+        self.title_font = cached_font(str(title_font_path), 28)
 
-        self.normal_font = (
-            pygame.font.Font(
-                self.text_font_path,
-                26
-            )
-        )
+        self.normal_font = cached_font(self.text_font_path, 26)
 
-        self.code_font = (
-            pygame.font.Font(
-                self.text_font_path,
-                26
-            )
-        )
+        self.code_font = self.normal_font
 
-        self.small_font = (
-            pygame.font.Font(
-                self.text_font_path,
-                22
-            )
-        )
+        self.small_font = cached_font(self.text_font_path, 22)
 
         self.player.max_health = 100
         self.player.health = 100
@@ -416,10 +381,7 @@ class BattleScene:
             minimum_size - 1,
             -1
         ):
-            font = pygame.font.Font(
-                self.text_font_path,
-                size
-            )
+            font = cached_font(self.text_font_path, size)
 
             widest = max(
                 font.size(line)[0]
@@ -429,10 +391,7 @@ class BattleScene:
             if widest <= max_width:
                 return font
 
-        return pygame.font.Font(
-            self.text_font_path,
-            minimum_size
-        )
+        return cached_font(self.text_font_path, minimum_size)
 
     def wrap_text(
         self,
