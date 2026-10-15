@@ -118,7 +118,7 @@ LEVELS = [
         "boss": {
             "name": "Prof. Jamis",
             "battle_sprite": "boss/JamisBS.png",
-            "battle_size": (84, 165),
+            "battle_size": (96, 170),
             "battle_background": "MiguelBattleBG.png",
         },
     },
