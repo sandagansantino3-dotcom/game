@@ -24,7 +24,7 @@ screen = pygame.display.set_mode(
     SCREEN_SIZE
 )
 
-pygame.display.set_caption("MIGUEL")
+pygame.display.set_caption("Realm of Syntax Errors")
 
 audio = menu.Audio()
 
