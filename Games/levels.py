@@ -173,7 +173,7 @@ LEVELS = [
             "sprite_set": "khal",
         },
         "boss": {
-            # Medium uses Lorna's existing art, with the new boss name Dj.
+            # Medium uses dj existing art, with the new boss name Dj.
             "name": "Miguel",
             "battle_sprite": "boss/MiguelBS.png",
             "attack_sprite": "boss/attack_animations/miguel_attack.png",

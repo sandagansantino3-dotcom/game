@@ -390,7 +390,7 @@ def main_menu(screen, audio, level_count, toggle_fullscreen=None):
         name = name if isinstance(name, str) else ""
         has_save = isinstance(level, int) and level >= 0 and bool(name.strip())
         choice = run_menu(
-            screen, audio, "MIGUEL", ["New Game", "Continue", "Settings", "Quit"], backdrop,
+            screen, audio, "R.O.S.E", ["New Game", "Continue", "Settings", "Quit"], backdrop,
             disabled=() if has_save else ("Continue",), selected=1 if has_save else 0,
             toggle_fullscreen=toggle_fullscreen,
         )

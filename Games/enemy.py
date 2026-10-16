@@ -120,7 +120,7 @@ class Enemy:
 
         self.velocity_y = 0
         self.gravity = 0.8
-        self.jump_speed = 12
+        self.jump_speed = 13
         self.on_ground = False
 
         self.detection_range = 550

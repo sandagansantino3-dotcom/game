@@ -73,7 +73,7 @@ man = Player(
     80
 )
 
-
+#load map
 def load_level(index):
     data = LEVELS[index]
 
